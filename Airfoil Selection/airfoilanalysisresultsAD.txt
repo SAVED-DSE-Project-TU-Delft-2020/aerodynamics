@@ -1,0 +1,17 @@
+
+NACA32114: (Cl/Cd)_max @ Cldes = 49.2, Cmac = 0.0054, alpha_cruise = 2.39 , Cl_max @ transition = 1.47 ,alpha_stall @transition = 16.4
+NACA32116: (Cl/Cd)_max @ Cldes = 50.5, Cmac = 0.0064, alpha_cruise = 2.32 , Cl_max @ transition = 1.58 ,alpha_stall @transition = 17.6
+NACA32118: (Cl/Cd)_max @ Cldes = 51.3, Cmac = 0.008, alpha_cruise = 2.26 , Cl_max @ transition = 1.69 ,alpha_stall @transition = 19.5
+NACA32120: (Cl/Cd)_max @ Cldes = 47.5, Cmac = 0.0095, alpha_cruise = 2.2 , Cl_max @ transition = 1.78 ,alpha_stall @transition = 20.0
+NACA33114: (Cl/Cd)_max @ Cldes = 52.7, Cmac = 0.0096, alpha_cruise = 2.29 , Cl_max @ transition = 1.52 ,alpha_stall @transition = 16.6
+NACA33116: (Cl/Cd)_max @ Cldes = 54.0, Cmac = 0.011, alpha_cruise = 2.22 , Cl_max @ transition = 1.65 ,alpha_stall @transition = 18.5
+NACA33118: (Cl/Cd)_max @ Cldes = 47.0, Cmac = 0.0127, alpha_cruise = 2.16 , Cl_max @ transition = 1.77 ,alpha_stall @transition = 19.6
+NACA33120: (Cl/Cd)_max @ Cldes = 44.7, Cmac = 0.0147, alpha_cruise = 2.09 , Cl_max @ transition = 1.87 ,alpha_stall @transition = 21.5
+NACA34114: (Cl/Cd)_max @ Cldes = 56.2, Cmac = 0.0079, alpha_cruise = 2.1 , Cl_max @ transition = 1.56 ,alpha_stall @transition = 17.0
+NACA34116: (Cl/Cd)_max @ Cldes = 57.5, Cmac = 0.009, alpha_cruise = 2.03 , Cl_max @ transition = 1.7 ,alpha_stall @transition = 19.0
+NACA34118: (Cl/Cd)_max @ Cldes = 51.3, Cmac = 0.011, alpha_cruise = 1.96 , Cl_max @ transition = 1.82 ,alpha_stall @transition = 20.0
+NACA34120: (Cl/Cd)_max @ Cldes = 48.2, Cmac = 0.0131, alpha_cruise = 1.89 , Cl_max @ transition = 1.94 ,alpha_stall @transition = 22.0
+NACA35114: (Cl/Cd)_max @ Cldes = 59.9, Cmac = 0.007, alpha_cruise = 2.0 , Cl_max @ transition = 1.6 ,alpha_stall @transition = 17.0
+NACA35116: (Cl/Cd)_max @ Cldes = 63.2, Cmac = 0.0082, alpha_cruise = 1.91 , Cl_max @ transition = 1.74 ,alpha_stall @transition = 18.8
+NACA35118: (Cl/Cd)_max @ Cldes = 54.1, Cmac = 0.0093, alpha_cruise = 1.83 , Cl_max @ transition = 1.87 ,alpha_stall @transition = 20.5
+NACA35120: (Cl/Cd)_max @ Cldes = 52.4, Cmac = 0.0113, alpha_cruise = 1.76 , Cl_max @ transition = 1.99 ,alpha_stall @transition = 21.6
