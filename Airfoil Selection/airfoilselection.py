@@ -1,6 +1,13 @@
 """ 
-This program analyses the performance of 40 NACA 5 digit airfoils and performs a MCDM for all concept (A,B,C,D)
+Title: PRELIMINARY AIRFOIL ANALYSIS DESIGN TOOL
 
+This program analyses the performance of 44 NACA 5 digit airfoils. 
+It stores the data of this analysis and assesses this data in a WPM and a WSM MCDM analysis. 
+A sensitivity analysis of these MCDMs are then performed. 
+
+- TODO: 
+    Add verification of the MCDM methods (Based on the source)
+    
 Author: Casper Kanaar 
 
 """ 
@@ -184,312 +191,256 @@ for i in range(len(airfoils_C)):
      
 file_C.writelines(file_results_C)
 file_C.close()
-# 
-# # =============================================================================
-# # Performing an MCDM for concept A and D (as t/c is a criterion for A and D)
-# 
-# # Normalizing Cl/Cd according to a linear scoring function 
-# clcd_ABD = []
-# for i in range(len(airfoil_results_ABD)):
-#     clcd_ABD.append(airfoil_results_ABD[i][1])
-# 
-# dydx_clcd_ABD = compute_dydx(clcd_ABD)
-# b_clcd_ABD = compute_b(dydx_clcd_ABD,clcd_ABD)
-# 
-# clcd_ABD_normalised = []
-# 
-# for i in range(len(clcd_ABD)):
-#     clcd_ABD_normalised.append(clcd_ABD[i]*dydx_clcd_ABD+b_clcd_ABD)
-#     
-# # Normalizing Cmac according to a linear scoring function 
-# cmac_ABD = []
-# for i in range(len(airfoil_results_ABD)):
-#     cmac_ABD.append(airfoil_results_ABD[i][2])
-# 
-# dydx_cmac_ABD = compute_dydx(cmac_ABD)
-# b_cmac_ABD = compute_b(dydx_cmac_ABD,cmac_ABD)
-# 
-# cmac_ABD_normalised = []
-# 
-# for i in range(len(cmac_ABD)):
-#     cmac_ABD_normalised.append(cmac_ABD[i]*dydx_cmac_ABD+b_cmac_ABD)
-#     
-# # Normalizing Clmax according to a linear scoring function 
-# clmax_ABD = []
-# for i in range(len(airfoil_results_ABD)):
-#     clmax_ABD.append(airfoil_results_ABD[i][4])
-# 
-# dydx_clmax_ABD = compute_dydx(clmax_ABD)
-# b_clmax_ABD = compute_b(dydx_clmax_ABD,clmax_ABD)
-# 
-# clmax_ABD_normalised = []
-# 
-# for i in range(len(clmax_ABD)):
-#     clmax_ABD_normalised.append(clmax_ABD[i]*dydx_clmax_ABD+b_clmax_ABD)
-#     
-# # Normalizing alphastall according to a linear scoring function 
-# alphastall_ABD = []
-# for i in range(len(airfoil_results_ABD)):
-#     alphastall_ABD.append(airfoil_results_ABD[i][5])
-# 
-# dydx_alphastall_ABD = compute_dydx(alphastall_ABD)
-# b_alphastall_ABD = compute_b(dydx_alphastall_ABD,alphastall_ABD)
-# 
-# alphastall_ABD_normalised = []
-# 
-# for i in range(len(alphastall_ABD)):
-#     alphastall_ABD_normalised.append(alphastall_ABD[i]*dydx_alphastall_ABD+b_alphastall_ABD)
-# 
-# tc_ABD = [10,12,14,16,18,10,12,14,16,18,10,12,14,16,18,10,12,14,16,18] 
-# # Normalizing t/c according to exponential scoring function (self picked values)
-# tc_ABD_normalised = [0,0.1,0.25,0.6,1,0,0.1,0.25,0.6,1,0,0.1,0.25,0.6,1,0,0.1,0.25,0.6,1]
-# 
-# 
-# # Creating a normalized Measure of Performance Matrx for A and D. Number (M) of alternatives (A) = 20. Number (N) of Criteria (C) = 5
-# matrix_AD_normalized_transposed = np.array([clcd_ABD_normalised,cmac_ABD_normalised,clmax_ABD_normalised,alphastall_ABD_normalised,tc_ABD_normalised])
-# matrix_AD_normalized = np.transpose(matrix_AD_normalized_transposed)
-# 
-# # Assigning weights to the criteria (THESE HAVE BEEN SELECTED BASED ON ENGINEERING JUDGEMENT!). Weighted Product Model requires the sum of the weights to equal 1.
-# weights_AD = [0.4,0.1,0.1,0.05,0.35]
-# 
-# # Calculating the scores of each alternative based on the normalized Weighted Sum Model. 
-# scores_AD_WSM = []
-# for i in range(len(matrix_AD_normalized)):
-#     total = 0
-#     for j in range(len(matrix_AD_normalized[i])):
-#         total = total + matrix_AD_normalized[i][j]*weights_AD[j]
-#     scores_AD_WSM.append(total)
-# 
-# index_max_AD = scores_AD_WSM.index(max(scores_AD_WSM))
-# print("The best airfoil for Concept A and D according to the WSM is the "+airfoils_ABD[index_max_AD])
-# airfoil_AD_WSM = airfoils_ABD[index_max_AD]
-# 
-# # WSM AD Sensitivity analysis 
-# sensitivity_matrix_AD_WSM = np.zeros((len(matrix_AD_normalized),len(matrix_AD_normalized[i])))
-# for i in range(len(scores_AD_WSM)-1):
-#     for j in range(len(weights_AD)):
-#         if matrix_AD_normalized[19][j] == matrix_AD_normalized[i][j]:
-#             sensitivity_matrix_AD_WSM[i,j] = 0
-#         else:
-#             sensitivity_matrix_AD_WSM[i,j] = (scores_AD_WSM[19] - scores_AD_WSM[i])/(matrix_AD_normalized[19][j]-matrix_AD_normalized[i][j]) * (100/weights_AD[j])
-#         
-# # Creating a non normalized Measure of Performance Matrx for A and D. Number (M) of alternatives (A) = 20. Number (N) of Criteria (C) = 5
-# matrix_AD_transposed = np.array([clcd_ABD,cmac_ABD,clmax_ABD,alphastall_ABD,tc_ABD])
-# matrix_AD = np.transpose(matrix_AD_transposed)
-# 
-# # Computing all ratios according to the Weighted Product Model.
-# ratio_matrix_AD = np.zeros((len(matrix_AD),len(matrix_AD)))
-#  
-# for i in range(len(ratio_matrix_AD)):
-#     for j in range(len(ratio_matrix_AD)): 
-#         total = 1
-#         for k in range(len(matrix_AD[0])): 
-#             total = total*((matrix_AD[i][k]/matrix_AD[j][k])**weights_AD[k])
-#         ratio_matrix_AD[i,j] = total
-# 
-# # Checking which airfoil is the best according to the Weighted Product Model
-# for i in range(len(ratio_matrix_AD)):
-#     count = 0 
-#     for j in range(len(ratio_matrix_AD[i])):
-#         if ratio_matrix_AD[i][j] >= 1: 
-#             count = count + 1 
-#     if count == 20:
-#         index = i
-# 
-# print("The best airfoil for Concept A and D according to the WPM is the "+airfoils_ABD[index])
-# airfoil_AD_WPM = airfoils_ABD[index]
-# 
-# # WPM AD Sensitivity analysis. 
-# sensitivity_matrix_AD_WPM = np.zeros((len(matrix_AD),len(matrix_AD[0])))
-# for i in range(len(matrix_AD)-1):
-#     for j in range(len(matrix_AD[i])):
-#         total = 1
-#         for k in range(len(matrix_AD[i])):
-#             total = total*(matrix_AD[i][k]/matrix_AD[i+1][k])**weights_AD[k]
-#         K = np.log10(total)/np.log10(matrix_AD[i][j]/matrix_AD[i+1][j]) * 100 / weights_AD[j]
-#         sensitivity_matrix_AD_WPM[i,j] = K
-# 
-# # =============================================================================
-# # Performing an MCDM for concept B (as t/c is not a criterion for B).
-#         
-# # Creating a normalized Measure of Performance Matrx for B. Number (M) of alternatives (A) = 20. Number (N) of Criteria (C) = 4
-# matrix_B_normalized_transposed = np.array([clcd_ABD_normalised,cmac_ABD_normalised,clmax_ABD_normalised,alphastall_ABD_normalised])
-# matrix_B_normalized = np.transpose(matrix_B_normalized_transposed)
-# 
-# # Assigning weights to the criteria (THESE HAVE BEEN SELECTED BASED ON ENGINEERING JUDGEMENT!). Weighted Product Model requires the sum of the weights to equal 1.
-# weights_B = [0.5,0.2,0.2,0.1]
-# 
-# # Calculating the scores of each alternative based on the normalized Weighted Sum Model. 
-# scores_B_WSM = []
-# for i in range(len(matrix_B_normalized)):
-#     total = 0
-#     for j in range(len(matrix_B_normalized[i])):
-#         total = total + matrix_B_normalized[i][j]*weights_B[j]
-#     scores_B_WSM.append(total)
-# 
-# index_max_B = scores_B_WSM.index(max(scores_B_WSM))
-# print("The best airfoil for Concept B according to the WSM is the "+airfoils_ABD[index_max_B])
-# airfoil_B_WSM = airfoils_ABD[index_max_B]
-# 
-# # WSM B Sensitivity analysis 
-# sensitivity_matrix_B_WSM = np.zeros((len(matrix_B_normalized),len(matrix_B_normalized[i])))
-# for i in range(len(scores_B_WSM)-1):
-#     for j in range(len(weights_B)):
-#         if matrix_B_normalized[19][j] == matrix_B_normalized[i][j]:
-#             sensitivity_matrix_B_WSM[i,j] = 0
-#         else:
-#             sensitivity_matrix_B_WSM[i,j] = (scores_B_WSM[19] - scores_B_WSM[i])/(matrix_B_normalized[19][j]-matrix_B_normalized[i][j]) * (100/weights_B[j])
-# 
-# # Creating a non normalized Measure of Performance Matrx for A and D. Number (M) of alternatives (A) = 20. Number (N) of Criteria (C) = 5
-# matrix_B_transposed = np.array([clcd_ABD,cmac_ABD,clmax_ABD,alphastall_ABD])
-# matrix_B = np.transpose(matrix_B_transposed)
-# 
-# # Computing all ratios according to the Weighted Product Model.
-# ratio_matrix_B = np.zeros((len(matrix_B),len(matrix_B)))
-#  
-# for i in range(len(ratio_matrix_B)):
-#     for j in range(len(ratio_matrix_B)): 
-#         total = 1
-#         for k in range(len(matrix_B[0])): 
-#             total = total*((matrix_B[i][k]/matrix_B[j][k])**weights_B[k])
-#         ratio_matrix_B[i,j] = total
-# 
-# # Checking which airfoil is the best according to the Weighted Product Model
-# for i in range(len(ratio_matrix_B)):
-#     count = 0 
-#     for j in range(len(ratio_matrix_B[i])):
-#         if ratio_matrix_B[i][j] >= 1: 
-#             count = count + 1 
-#     if count == 20:
-#         index = i
-# 
-# print("The best airfoil for Concept B according to the WPM is the "+airfoils_ABD[index])
-# airfoil_B_WPM = airfoils_ABD[index]
-# 
-# # WPM AD Sensitivity analysis. 
-# sensitivity_matrix_B_WPM = np.zeros((len(matrix_B),len(matrix_B[0])))
-# for i in range(len(matrix_B)-1):
-#     for j in range(len(matrix_B[i])):
-#         total = 1
-#         for k in range(len(matrix_B[i])):
-#             total = total*(matrix_B[i][k]/matrix_B[i+1][k])**weights_B[k]
-#         K = np.log10(total)/np.log10(matrix_B[i][j]/matrix_B[i+1][j]) * 100 / weights_B[j]
-#         sensitivity_matrix_B_WPM[i,j] = K
-# 
-# # =============================================================================
-# # Performing an MCDM for concept C (as t/c is not a criterion for C)
-# 
-# # Normalizing Cl/Cd according to a linear scoring function 
-# clcd_C = []
-# for i in range(len(airfoil_results_C)):
-#     clcd_C.append(airfoil_results_C[i][1])
-# 
-# dydx_clcd_C = compute_dydx(clcd_C)
-# b_clcd_C = compute_b(dydx_clcd_C,clcd_C)
-# 
-# clcd_C_normalised = []
-# 
-# for i in range(len(clcd_C)):
-#     clcd_C_normalised.append(clcd_C[i]*dydx_clcd_C+b_clcd_C)
-#     
-# # Normalizing Clmax according to a linear scoring function 
-# clmax_C = []
-# for i in range(len(airfoil_results_C)):
-#     clmax_C.append(airfoil_results_C[i][4])
-# 
-# dydx_clmax_C = compute_dydx(clmax_C)
-# b_clmax_C = compute_b(dydx_clmax_C,clmax_C)
-# 
-# clmax_C_normalised = []
-# 
-# for i in range(len(clmax_C)):
-#     clmax_C_normalised.append(clmax_C[i]*dydx_clmax_C+b_clmax_C)
-#     
-# # Normalizing alphastall according to a linear scoring function 
-# alphastall_C = []
-# for i in range(len(airfoil_results_C)):
-#     alphastall_C.append(airfoil_results_C[i][5])
-# 
-# dydx_alphastall_C = compute_dydx(alphastall_C)
-# b_alphastall_C = compute_b(dydx_alphastall_C,alphastall_C)
-# 
-# alphastall_C_normalised = []
-# 
-# for i in range(len(alphastall_C)):
-#     alphastall_C_normalised.append(alphastall_C[i]*dydx_alphastall_C+b_alphastall_C)
-# 
-# # Creating a normalized Measure of Performance Matrx for A and D. Number (M) of alternatives (A) = 20. Number (N) of Criteria (C) = 5
-# matrix_C_normalized_transposed = np.array([clcd_C_normalised,clmax_C_normalised,alphastall_C_normalised])
-# matrix_C_normalized = np.transpose(matrix_C_normalized_transposed)
-# 
-# # Assigning weights to the criteria (THESE HAVE BEEN SELECTED BASED ON ENGINEERING JUDGEMENT!). Weighted Product Model requires the sum of the weights to equal 1.
-# weights_C = [0.5,0.3,0.2]
-# 
-# # Calculating the scores of each alternative based on the normalized Weighted Sum Model. 
-# scores_C_WSM = []
-# for i in range(len(matrix_C_normalized)):
-#     total = 0
-#     for j in range(len(matrix_C_normalized[i])):
-#         total = total + matrix_C_normalized[i][j]*weights_C[j]
-#     scores_C_WSM.append(total)
-# 
-# index_max_C = scores_C_WSM.index(max(scores_C_WSM))
-# print("The best airfoil for Concept C according to the WSM is the "+airfoils_C[index_max_C])
-# airfoil_C_WSM = airfoils_C[index_max_C]
-# 
-# # WSM AD Sensitivity analysis 
-# sensitivity_matrix_C_WSM = np.zeros((len(matrix_C_normalized),len(matrix_C_normalized[i])))
-# for i in range(len(scores_C_WSM)-1):
-#     for j in range(len(weights_C)):
-#         if matrix_C_normalized[19][j] == matrix_C_normalized[i][j]:
-#             sensitivity_matrix_C_WSM[i,j] = 0
-#         else:
-#             sensitivity_matrix_C_WSM[i,j] = (scores_C_WSM[19] - scores_C_WSM[i])/(matrix_C_normalized[19][j]-matrix_C_normalized[i][j]) * (100/weights_C[j])
-#         
-# # Creating a non normalized Measure of Performance Matrx for A and D. Number (M) of alternatives (A) = 20. Number (N) of Criteria (C) = 5
-# matrix_C_transposed = np.array([clcd_C,clmax_C,alphastall_C])
-# matrix_C = np.transpose(matrix_C_transposed)
-# 
-# # Computing all ratios according to the Weighted Product Model.
-# ratio_matrix_C = np.zeros((len(matrix_C),len(matrix_C)))
-#  
-# for i in range(len(ratio_matrix_C)):
-#     for j in range(len(ratio_matrix_C)): 
-#         total = 1
-#         for k in range(len(matrix_C[0])): 
-#             total = total*((matrix_C[i][k]/matrix_C[j][k])**weights_C[k])
-#         ratio_matrix_C[i,j] = total
-# 
-# # Checking which airfoil is the best according to the Weighted Product Model
-# for i in range(len(ratio_matrix_C)):
-#     count = 0 
-#     for j in range(len(ratio_matrix_C[i])):
-#         if ratio_matrix_C[i][j] >= 1: 
-#             count = count + 1 
-#     if count == 20:
-#         index = i
-# 
-# print("The best airfoil for Concept C according to the WPM is the "+airfoils_C[index])
-# airfoil_C_WPM = airfoils_C[index]
-# 
-# # WPM AD Sensitivity analysis. 
-# sensitivity_matrix_C_WPM = np.zeros((len(matrix_C),len(matrix_C[0])))
-# for i in range(len(matrix_C)-1):
-#     for j in range(len(matrix_C[i])):
-#         total = 1
-#         for k in range(len(matrix_C[i])):
-#             total = total*(matrix_C[i][k]/matrix_C[i+1][k])**weights_C[k]
-#         K = np.log10(total)/np.log10(matrix_C[i][j]/matrix_C[i+1][j]) * 100 / weights_C[j]
-#         sensitivity_matrix_C_WPM[i,j] = K
-# =============================================================================
 
+# =============================================================================
+# Performing an MCDM for concept A and D (as t/c is a criterion for A and D)
+ 
+# Normalizing Cl/Cd according to a linear scoring function 
+clcd_AD = []
+for i in range(len(airfoil_results_AD)):
+    clcd_AD.append(airfoil_results_AD[i][1])
+
+dydx_clcd_AD = compute_dydx(clcd_AD)
+b_clcd_AD = compute_b(dydx_clcd_AD,clcd_AD)
+ 
+clcd_AD_normalised = []
+
+for i in range(len(clcd_AD)):
+    clcd_AD_normalised.append(clcd_AD[i]*dydx_clcd_AD+b_clcd_AD)
+    
+# Normalizing Cmac according to a linear scoring function 
+cmac_AD = []
+for i in range(len(airfoil_results_AD)):
+    cmac_AD.append(airfoil_results_AD[i][2])
+ 
+dydx_cmac_AD = compute_dydx(cmac_AD)
+b_cmac_AD = compute_b(dydx_cmac_AD,cmac_AD)
+
+cmac_AD_normalised = []
+ 
+for i in range(len(cmac_AD)):
+    cmac_AD_normalised.append(cmac_AD[i]*dydx_cmac_AD+b_cmac_AD)
+     
+# Normalizing Clmax according to a linear scoring function 
+clmax_AD = []
+for i in range(len(airfoil_results_AD)):
+    clmax_AD.append(airfoil_results_AD[i][4])
+
+dydx_clmax_AD = compute_dydx(clmax_AD)
+b_clmax_AD = compute_b(dydx_clmax_AD,clmax_AD)
+
+clmax_AD_normalised = []
+ 
+for i in range(len(clmax_AD)):
+    clmax_AD_normalised.append(clmax_AD[i]*dydx_clmax_AD+b_clmax_AD)
+    
+# Normalizing alphastall according to a linear scoring function 
+alphastall_AD = []
+for i in range(len(airfoil_results_AD)):
+    alphastall_AD.append(airfoil_results_AD[i][5])
+
+dydx_alphastall_AD = compute_dydx(alphastall_AD)
+b_alphastall_AD = compute_b(dydx_alphastall_AD,alphastall_AD)
+
+alphastall_AD_normalised = []
+
+for i in range(len(alphastall_AD)):
+    alphastall_AD_normalised.append(alphastall_AD[i]*dydx_alphastall_AD+b_alphastall_AD)
+
+tc_AD = [14,16,18,20,14,16,18,20,14,16,18,20,14,16,18,20,] 
+# Normalizing t/c according to exponential scoring function (self picked values)
+tc_AD_normalised = [0,0.2,0.5,1.0,0,0.2,0.5,1.0,0,0.2,0.5,1.0,0,0.2,0.5,1.0]
+
+
+# Creating a normalized Measure of Performance Matrx for A and D. Number (M) of alternatives (A) = 16. Number (N) of Criteria (C) = 5.
+matrix_AD_normalized_transposed = np.array([clcd_AD_normalised,cmac_AD_normalised,clmax_AD_normalised,alphastall_AD_normalised,tc_AD_normalised])
+matrix_AD_normalized = np.transpose(matrix_AD_normalized_transposed)
+ 
+# Assigning weights to the criteria (THESE HAVE BEEN SELECTED BASED ON ENGINEERING JUDGEMENT!). Weighted Product Model requires the sum of the weights to equal 1.
+weights_AD = [0.4,0.1,0.1,0.05,0.35]
+
+# Calculating the scores of each alternative based on the normalized Weighted Sum Model. 
+scores_AD_WSM = []
+for i in range(len(matrix_AD_normalized)):
+    total = 0
+    for j in range(len(matrix_AD_normalized[i])):
+        total = total + matrix_AD_normalized[i][j]*weights_AD[j]
+    scores_AD_WSM.append(total)
+
+index_max_AD = scores_AD_WSM.index(max(scores_AD_WSM))
+print("The best airfoil for Concept A and D according to the WSM is the NACA"+airfoils_AD[index_max_AD])
+airfoil_AD_WSM = airfoils_AD[index_max_AD]
+
+# WSM AD Sensitivity analysis 
+sensitivity_matrix_AD_WSM = np.zeros((len(matrix_AD_normalized),len(matrix_AD_normalized[i])))
+for i in range(len(scores_AD_WSM)-1):
+    for j in range(len(weights_AD)):
+        if matrix_AD_normalized[15][j] == matrix_AD_normalized[i][j]:
+            sensitivity_matrix_AD_WSM[i,j] = 0
+        else:
+            sensitivity_matrix_AD_WSM[i,j] = (scores_AD_WSM[15] - scores_AD_WSM[i])/(matrix_AD_normalized[15][j]-matrix_AD_normalized[i][j]) * (100/weights_AD[j])
+        
+# Creating a non normalized Measure of Performance Matrx for A and D. Number (M) of alternatives (A) = 20. Number (N) of Criteria (C) = 5
+matrix_AD_transposed = np.array([clcd_AD,cmac_AD,clmax_AD,alphastall_AD,tc_AD])
+matrix_AD = np.transpose(matrix_AD_transposed)
+ 
+# Computing all ratios according to the Weighted Product Model.
+ratio_matrix_AD = np.zeros((len(matrix_AD),len(matrix_AD)))
+ 
+for i in range(len(ratio_matrix_AD)):
+    for j in range(len(ratio_matrix_AD)): 
+        total = 1
+        for k in range(len(matrix_AD[0])): 
+            total = total*((matrix_AD[i][k]/matrix_AD[j][k])**weights_AD[k])
+        ratio_matrix_AD[i,j] = total
+
+# Checking which airfoil is the best according to the Weighted Product Model
+for i in range(len(ratio_matrix_AD)):
+    count = 0 
+    for j in range(len(ratio_matrix_AD[i])):
+        if ratio_matrix_AD[i][j] >= 1: 
+            count = count + 1 
+    if count == 16:
+        index = i
+ 
+print("The best airfoil for Concept A and D according to the WPM is the NACA"+airfoils_AD[index])
+airfoil_AD_WPM = airfoils_AD[index]
+
+# WPM AD Sensitivity analysis. 
+sensitivity_matrix_AD_WPM = np.zeros((len(matrix_AD),len(matrix_AD[0])))
+for i in range(len(matrix_AD)-1):
+    for j in range(len(matrix_AD[i])):
+        total = 1
+        for k in range(len(matrix_AD[i])):
+            total = total*(matrix_AD[i][k]/matrix_AD[i+1][k])**weights_AD[k]
+        K = np.log10(total)/np.log10(matrix_AD[i][j]/matrix_AD[i+1][j]) * 100 / weights_AD[j]
+        sensitivity_matrix_AD_WPM[i,j] = K
+
+# =============================================================================
+# Performing an MCDM for concept C (as t/c is not a criterion for C)
+
+# Normalizing Cl/Cd according to a linear scoring function 
+clcd_C = []
+for i in range(len(airfoil_results_C)):
+    clcd_C.append(airfoil_results_C[i][1])
+
+dydx_clcd_C = compute_dydx(clcd_C)
+b_clcd_C = compute_b(dydx_clcd_C,clcd_C)
+
+clcd_C_normalised = []
+
+for i in range(len(clcd_C)):
+    clcd_C_normalised.append(clcd_C[i]*dydx_clcd_C+b_clcd_C)
+     
+# Normalizing Clmax according to a linear scoring function 
+clmax_C = []
+for i in range(len(airfoil_results_C)):
+    clmax_C.append(airfoil_results_C[i][4])
+
+dydx_clmax_C = compute_dydx(clmax_C)
+b_clmax_C = compute_b(dydx_clmax_C,clmax_C)
+
+clmax_C_normalised = []
+ 
+for i in range(len(clmax_C)):
+    clmax_C_normalised.append(clmax_C[i]*dydx_clmax_C+b_clmax_C)
+    
+# Normalizing alphastall according to a linear scoring function 
+alphastall_C = []
+for i in range(len(airfoil_results_C)):
+    alphastall_C.append(airfoil_results_C[i][5])
+
+dydx_alphastall_C = compute_dydx(alphastall_C)
+b_alphastall_C = compute_b(dydx_alphastall_C,alphastall_C)
+
+alphastall_C_normalised = []
+
+for i in range(len(alphastall_C)):
+    alphastall_C_normalised.append(alphastall_C[i]*dydx_alphastall_C+b_alphastall_C)
+
+# Creating a normalized Measure of Performance Matrx for A and D. Number (M) of alternatives (A) = 20. Number (N) of Criteria (C) = 5
+matrix_C_normalized_transposed = np.array([clcd_C_normalised,clmax_C_normalised,alphastall_C_normalised])
+matrix_C_normalized = np.transpose(matrix_C_normalized_transposed)
+
+# Assigning weights to the criteria (THESE HAVE BEEN SELECTED BASED ON ENGINEERING JUDGEMENT!). Weighted Product Model requires the sum of the weights to equal 1.
+weights_C = [0.6,0.2,0.2]
+
+# Calculating the scores of each alternative based on the normalized Weighted Sum Model. 
+scores_C_WSM = []
+for i in range(len(matrix_C_normalized)):
+    total = 0
+    for j in range(len(matrix_C_normalized[i])):
+        total = total + matrix_C_normalized[i][j]*weights_C[j]
+    scores_C_WSM.append(total)
+
+index_max_C = scores_C_WSM.index(max(scores_C_WSM))
+print("The best airfoil for Concept C according to the WSM is the NACA"+airfoils_C[index_max_C])
+airfoil_C_WSM = airfoils_C[index_max_C]
+
+# WSM AD Sensitivity analysis 
+sensitivity_matrix_C_WSM = np.zeros((len(matrix_C_normalized),len(matrix_C_normalized[i])))
+for i in range(len(scores_C_WSM)-1):
+    for j in range(len(weights_C)):
+        if matrix_C_normalized[24][j] == matrix_C_normalized[i][j]:
+            sensitivity_matrix_C_WSM[i,j] = 0
+        else:
+            sensitivity_matrix_C_WSM[i,j] = (scores_C_WSM[24] - scores_C_WSM[i])/(matrix_C_normalized[24][j]-matrix_C_normalized[i][j]) * (100/weights_C[j])
+        
+# Creating a non normalized Measure of Performance Matrx for A and D. Number (M) of alternatives (A) = 20. Number (N) of Criteria (C) = 5
+matrix_C_transposed = np.array([clcd_C,clmax_C,alphastall_C])
+matrix_C = np.transpose(matrix_C_transposed)
+
+# Computing all ratios according to the Weighted Product Model.
+ratio_matrix_C = np.zeros((len(matrix_C),len(matrix_C)))
+ 
+for i in range(len(ratio_matrix_C)):
+    for j in range(len(ratio_matrix_C)): 
+        total = 1
+        for k in range(len(matrix_C[0])): 
+            total = total*((matrix_C[i][k]/matrix_C[j][k])**weights_C[k])
+        ratio_matrix_C[i,j] = total
+
+# Checking which airfoil is the best according to the Weighted Product Model
+for i in range(len(ratio_matrix_C)):
+    count = 0 
+    for j in range(len(ratio_matrix_C[i])):
+        if ratio_matrix_C[i][j] >= 1: 
+            count = count + 1 
+    if count == 25:
+        index = i
+ 
+print("The best airfoil for Concept C according to the WPM is the NACA"+airfoils_C[index])
+airfoil_C_WPM = airfoils_C[index]
+
+# WPM AD Sensitivity analysis. 
+sensitivity_matrix_C_WPM = np.zeros((len(matrix_C),len(matrix_C[0])))
+for i in range(len(matrix_C)-1):
+    for j in range(len(matrix_C[i])):
+        total = 1
+        for k in range(len(matrix_C[i])):
+            total = total*(matrix_C[i][k]/matrix_C[i+1][k])**weights_C[k]
+        K = np.log10(total)/np.log10(matrix_C[i][j]/matrix_C[i+1][j]) * 100 / weights_C[j]
+        sensitivity_matrix_C_WPM[i,j] = K
+# =============================================================================
+# Compiling a .txt file with all selected airfoil data for the other departments
+final_file = open("finalresults.txt", "w")
+final_file.close()
+
+final_file = open("finalresults.txt","w")
+final_file_lines_AD = ["FINAL AIRFOIL SELECTION RESULTS","\n","\n","Concept A and D: NACA"+airfoil_AD_WSM,"\n", "Cl/Cd @ Cldes = "+str(round(float(airfoil_results_AD[index_max_AD][1]),1)),"\n", "Cmac = "+str(round(float(airfoil_results_AD[index_max_AD][2]),4)),"\n","Alpha cruise = "+str(round(float(airfoil_results_AD[index_max_AD][2]),3)),"\n", "Cl_max @ Re_transition = "+str(round(float(airfoil_results_AD[index_max_AD][3]),1)),"\n","Alpha stall @ Re_transition = "+str(round(float(airfoil_results_AD[index_max_AD][4]),1))]
+final_file.writelines(final_file_lines_AD)
+final_file_lines_C = ["\n","\n","Concept C: NACA"+airfoil_C_WSM,"\n", "Cl/Cd @ Cldes = "+str(round(float(airfoil_results_C[index_max_C][1]),1)),"\n", "Cmac = "+str(round(float(airfoil_results_C[index_max_C][2]),4)),"\n","Alpha cruise = "+str(round(float(airfoil_results_C[index_max_C][2]),3)),"\n", "Cl_max @ Re_transition = "+str(round(float(airfoil_results_C[index_max_C][3]),1)),"\n","Alpha stall @ Re_transition = "+str(round(float(airfoil_results_C[index_max_C][4]),1))]
+final_file.writelines(final_file_lines_C)
+final_file.close()
+
+# =============================================================================
+# Verification 
 
 
         
         
             
  
-
         
 
             

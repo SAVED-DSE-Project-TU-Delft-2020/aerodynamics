@@ -1,0 +1,26 @@
+
+NACA31010: (Cl/Cd)_max @ Cldes = 32.2, Cmac = -0.001, alpha_cruise = 2.26 , Cl_max @ transition = 1.13 ,alpha_stall @transition = 13.9
+NACA31012: (Cl/Cd)_max @ Cldes = 35.2, Cmac = -0.0, alpha_cruise = 2.2 , Cl_max @ transition = 1.23 ,alpha_stall @transition = 15.1
+NACA31014: (Cl/Cd)_max @ Cldes = 35.6, Cmac = 0.0, alpha_cruise = 2.15 , Cl_max @ transition = 1.32 ,alpha_stall @transition = 16.5
+NACA31016: (Cl/Cd)_max @ Cldes = 41.9, Cmac = 0.0, alpha_cruise = 2.1 , Cl_max @ transition = 1.41 ,alpha_stall @transition = 16.6
+NACA31018: (Cl/Cd)_max @ Cldes = 34.7, Cmac = 0.001, alpha_cruise = 2.05 , Cl_max @ transition = 1.51 ,alpha_stall @transition = 16.5
+NACA32010: (Cl/Cd)_max @ Cldes = 41.4, Cmac = -0.0036, alpha_cruise = 1.84 , Cl_max @ transition = 1.26 ,alpha_stall @transition = 10.9
+NACA32012: (Cl/Cd)_max @ Cldes = 41.6, Cmac = -0.0052, alpha_cruise = 1.78 , Cl_max @ transition = 1.36 ,alpha_stall @transition = 12.4
+NACA32014: (Cl/Cd)_max @ Cldes = 47.8, Cmac = -0.0041, alpha_cruise = 1.72 , Cl_max @ transition = 1.47 ,alpha_stall @transition = 16.0
+NACA32016: (Cl/Cd)_max @ Cldes = 49.3, Cmac = -0.0031, alpha_cruise = 1.66 , Cl_max @ transition = 1.58 ,alpha_stall @transition = 16.9
+NACA32018: (Cl/Cd)_max @ Cldes = 50.9, Cmac = -0.0021, alpha_cruise = 1.6 , Cl_max @ transition = 1.69 ,alpha_stall @transition = 19.0
+NACA33010: (Cl/Cd)_max @ Cldes = 42.9, Cmac = -0.013, alpha_cruise = 1.51 , Cl_max @ transition = 1.3 ,alpha_stall @transition = 10.5
+NACA33012: (Cl/Cd)_max @ Cldes = 43.9, Cmac = -0.012, alpha_cruise = 1.44 , Cl_max @ transition = 1.4 ,alpha_stall @transition = 12.1
+NACA33014: (Cl/Cd)_max @ Cldes = 46.3, Cmac = -0.0104, alpha_cruise = 1.37 , Cl_max @ transition = 1.52 ,alpha_stall @transition = 15.7
+NACA33016: (Cl/Cd)_max @ Cldes = 47.3, Cmac = -0.0094, alpha_cruise = 1.31 , Cl_max @ transition = 1.64 ,alpha_stall @transition = 17.6
+NACA33018: (Cl/Cd)_max @ Cldes = 43.2, Cmac = -0.0074, alpha_cruise = 1.26 , Cl_max @ transition = 1.77 ,alpha_stall @transition = 18.6
+NACA34010: (Cl/Cd)_max @ Cldes = 45.6, Cmac = -0.0209, alpha_cruise = 1.19 , Cl_max @ transition = 1.3 ,alpha_stall @transition = 11.9
+NACA34012: (Cl/Cd)_max @ Cldes = 46.6, Cmac = -0.0199, alpha_cruise = 1.12 , Cl_max @ transition = 1.42 ,alpha_stall @transition = 14.0
+NACA34014: (Cl/Cd)_max @ Cldes = 49.0, Cmac = -0.018, alpha_cruise = 1.05 , Cl_max @ transition = 1.56 ,alpha_stall @transition = 16.0
+NACA34016: (Cl/Cd)_max @ Cldes = 49.8, Cmac = -0.0168, alpha_cruise = 0.99 , Cl_max @ transition = 1.69 ,alpha_stall @transition = 18.0
+NACA34018: (Cl/Cd)_max @ Cldes = 47.3, Cmac = -0.0157, alpha_cruise = 0.92 , Cl_max @ transition = 1.82 ,alpha_stall @transition = 19.0
+NACA35010: (Cl/Cd)_max @ Cldes = 48.5, Cmac = -0.0293, alpha_cruise = 0.9 , Cl_max @ transition = 1.33 ,alpha_stall @transition = 11.9
+NACA35012: (Cl/Cd)_max @ Cldes = 49.5, Cmac = -0.0283, alpha_cruise = 0.82 , Cl_max @ transition = 1.45 ,alpha_stall @transition = 13.9
+NACA35014: (Cl/Cd)_max @ Cldes = 50.8, Cmac = -0.0272, alpha_cruise = 0.75 , Cl_max @ transition = 1.59 ,alpha_stall @transition = 15.6
+NACA35016: (Cl/Cd)_max @ Cldes = 50.5, Cmac = -0.0262, alpha_cruise = 0.69 , Cl_max @ transition = 1.73 ,alpha_stall @transition = 18.0
+NACA35018: (Cl/Cd)_max @ Cldes = 50.0, Cmac = -0.0241, alpha_cruise = 0.62 , Cl_max @ transition = 1.85 ,alpha_stall @transition = 19.5
