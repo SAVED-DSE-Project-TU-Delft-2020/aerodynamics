@@ -21,7 +21,7 @@ class Wing_A(object):
         self.wingloading = 122.26
         self.taper = self.tipchord/self.rootchord
         self.MTOM = 16.217
-        self.surfacearea = self.wingloading/(self.MTOM*9.81)
+        self.surfacearea = (self.MTOM*9.81)/self.wingloading
         
 class Concept_A(object):
      #NOTE use __slots__ to avoid unintended mistakes
@@ -43,7 +43,7 @@ class Wing_D(object):
         self.wingloading = 122.26
         self.taper = self.tipchord/self.rootchord
         self.MTOM = 16.217
-        self.surfacearea = self.wingloading/(self.MTOM*9.81)
+        self.surfacearea = (self.MTOM*9.81)/self.wingloading
     
 class Concept_D(object):
      #NOTE use __slots__ to avoid unintended mistakes
@@ -62,7 +62,7 @@ class Wing_C(object):
         self.wingloading = 122.26
         self.span = 3
         self.MTOM = 16.217
-        self.surfaceaera = self.wingloading/(self.MTOM*9.81)
+        self.surfaceaera = (self.MTOM*9.81)/self.wingloading
         self.averagechord = self.surfaceaera/self.span
         self.sweepdegLErad = 0 
         
