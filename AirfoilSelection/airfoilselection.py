@@ -16,6 +16,9 @@ Author: Casper Kanaar
 import numpy as np 
 from isacalculator import compute_isa 
 from scipy.interpolate import interp1d
+import sys
+sys.path.append('..')
+from parameters import parameters
 
 # =============================================================================
 # Functions 
@@ -36,23 +39,23 @@ def compute_caverage(c_r,c_t):
 
 # =============================================================================
 #  Parameters 
-V_cruise = 28                                                           # [m/s]. Cruise speed. FROZEN from FPP
-V_transition = 14                                                       # [m/s]. Transition speed. FROZEN from FPP
-h_cruise = 500                                                          # [m]. Cruise altitude. FROZEN from FPP
-h_transition = 30                                                       # [m]. Transition altitude. FROZEN from SIM
+V_cruise = parameters.Concept_C.Vcruise                                 # [m/s]. Cruise speed. FROZEN from FPP
+V_transition = parameters.Concept_C.Vtransition                         # [m/s]. Transition speed. FROZEN from FPP
+h_cruise = parameters.Concept_C.hcruise                                 # [m]. Cruise altitude. FROZEN from FPP
+h_transition = parameters.Concept_C.htransition                         # [m]. Transition altitude. FROZEN from SIM
 p_cruise,rho_cruise,T_cruise = compute_isa(h_cruise)                    # [Pa, kg/m3, K]. Cruise pressure, density, and temperature. FROZEN from FPP
 p_transition,rho_transition,T_transition = compute_isa(h_transition)    # [Pa, kg/m3, K]. Cruise pressure, density, and temperature. FROZEN from SIM 
 mu_cruise = 17.73e-6                                                    # [Pa.s]. Dynamic viscocity of air at cruise. FROZEN from FPP
 mu_transition= 1.7955e-5                                                # [Pa.s]. Dynamic viscocity of air at transition. FROZEN from SIM 
-Lambda_AD = 20 / 180 * np.pi                                            # [rad]. Main wing sweep angle concept ABD. FROZEN from SMM
-Lambda_C = 0 / 180 * np.pi                                              # [rad]. Main wing sweep angle concept C. FROZEN from SMM
-MTOM = 16.27                                                            # [kg]. Maximum Take-Off Weight. FROZEN from BASELINE
-c_r_AD = 0.76                                                           # [m]. Root chord AD. FROZEN from SMM 
-c_t_AD = 0.113                                                          # [m]. Tip chord AD. FROZEN from SMM
-b = 3                                                                   # [m]. Wing span. FROZEN from project guide  
-WL = 121.2560076                                                        # [N/m2]. Wing loading. FROZEN from FPP. 
-S = MTOM*9.81/(WL)                                                      # [m2]. Initial surface area estimate 
-c_avg_C = S/b                                                           # [m]. Average chord concept C. FROZEN from SMM
+Lambda_AD = parameters.Wing_A.sweepdegLErad                             # [rad]. Main wing sweep angle concept ABD. FROZEN from SMM
+Lambda_C = parameters.Wing_C.sweepdegLErad                              # [rad]. Main wing sweep angle concept C. FROZEN from SMM
+MTOM = parameters.Concept_A.MTOM                                        # [kg]. Maximum Take-Off Weight. FROZEN from BASELINE
+c_r_AD = parameters.Wing_A.rootchord                                    # [m]. Root chord AD. FROZEN from SMM 
+c_t_AD = parameters.Wing_A.tipchord                                     # [m]. Tip chord AD. FROZEN from SMM
+b = parameters.Wing_C.span                                              # [m]. Wing span. FROZEN from project guide  
+WL = parameters.Wing_C.wingloading                                      # [N/m2]. Wing loading. FROZEN from FPP. 
+S = parameters.Wing_C.surfaceaera                                       # [m2]. Initial surface area estimate 
+c_avg_C = parameters.Wing_C.averagechord                                # [m]. Average chord concept C. FROZEN from SMM
 
 # =============================================================================
 # Main
@@ -433,8 +436,8 @@ final_file_lines_C = ["\n","\n","Concept C: NACA"+airfoil_C_WSM,"\n", "Cl/Cd @ C
 final_file.writelines(final_file_lines_C)
 final_file.close()
 
-# =============================================================================
-# Verification 
+# ==================================END========================================
+
 
 
         

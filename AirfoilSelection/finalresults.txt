@@ -1,14 +1,14 @@
 FINAL AIRFOIL SELECTION RESULTS
 
 Concept A and D: NACA35120
-Cl/Cd @ Cldes = 52.4
+Cl/Cd @ Cldes = 52.3
 Cmac = 0.0113
 Alpha cruise = 0.011
-Cl_max @ Re_transition = 1.8
+Cl_max @ Re_transition = 1.7
 Alpha stall @ Re_transition = 2.0
 
 Concept C: NACA35018
-Cl/Cd @ Cldes = 50.0
+Cl/Cd @ Cldes = 49.9
 Cmac = -0.0241
 Alpha cruise = -0.024
 Cl_max @ Re_transition = 0.6
