@@ -3,4 +3,4 @@ Designing the aerodynamic characteristics of the wing, propeller, and empennage 
 
 GitHub actions status:
 
-![Python package](https://github.com/SAVED-DSE-Project-TU-Delft-2020/aerodynamics/workflows/Python%20package/badge.svg)
+![Python package](https://github.com/SAVED-DSE-Project-TU-Delft-2020/aerodynamics/workflows/Python%20package/badge.svg?branch=master)
