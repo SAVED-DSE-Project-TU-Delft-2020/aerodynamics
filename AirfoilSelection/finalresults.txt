@@ -1,15 +1,25 @@
 FINAL AIRFOIL SELECTION RESULTS
 
-Concept A and D: NACA35120
+Concept A: NACA35120
 Cl/Cd @ Cldes = 52.3
 Cmac = 0.0113
 Alpha cruise = 0.011
 Cl_max @ Re_transition = 1.7
 Alpha stall @ Re_transition = 2.0
+The most critical criterion is Cl/Cd @ Cldes. This criterion should be changed by 78.64136778017026% to swap the ranking of 33012 and 34010
 
-Concept C: NACA35018
-Cl/Cd @ Cldes = 49.9
-Cmac = -0.0241
-Alpha cruise = -0.024
-Cl_max @ Re_transition = 0.6
-Alpha stall @ Re_transition = 1.9
+Concept D: NACA35120
+Cl/Cd @ Cldes = 52.3
+Cmac = 0.0113
+Alpha cruise = 0.011
+Cl_max @ Re_transition = 1.7
+Alpha stall @ Re_transition = 2.0
+The most critical criterion is Cl/Cd @ Cldes. This criterion should be changed by -21.488616971214473% to swap the ranking of 33016 and 34010
+
+Concept C: CAL4014L
+Cl/Cd @ Cldes = 170.4
+Cmac = 0.018
+Alpha cruise = 0.018
+Cl_max @ Re_transition = 3.2
+Alpha stall @ Re_transition = 1.4
+The most critical criterion is Cl/Cd @ Cldes. This criterion should be changed by 62.035841802206264% to swap the ranking of 35018 and CAL4014L
