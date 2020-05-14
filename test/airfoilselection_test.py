@@ -63,56 +63,50 @@ def sensitivity_WSM(matrix,weights):
                     
     return sensitivity_matrix
 
-def find_critical_criterion(normalized_matrix,sensitivity_matrix): 
-    # Arbitrary starting value 
-    value = 100
-    for i in range(len(sensitivity_matrix)):
-        for j in range(len(sensitivity_matrix[i])):
-            if type(sensitivity_matrix[i][j]) == str:
-                continue
-            else:
-                if abs(sensitivity_matrix[i][j]) <= abs(value): 
-                    value = sensitivity_matrix[i][j]
-                    row = i 
-                    criterion = j
+def find_critical_criterion(matrix,weights,sensitivity):
+    P = WSM(matrix,weights)
+    index_winner = winner_WSM(P)
     
-    row = 0
-    total = len(sensitivity_matrix)
-    n_alternatives = len(normalized_matrix)
-    i = 1
+    j = 1
     transition_list = [0]
     transition = 0
+    total = len(sensitivity)
+    n_alternatives = len(matrix)
     
     while total > 0: 
-        total = total - (n_alternatives-i)
-        transition = transition + (n_alternatives - i)
+        total = total - (n_alternatives-j)
+        transition = transition + (n_alternatives - j)
         transition_list.append(transition)
-        i = i + 1 
+        j = j + 1 
     
-    for i in range(len(transition_list)-1):
-        if transition_list[i] <= row < transition_list[i+1]:
-            index_1 = i 
-    index_2 = row - transition_list[index_1] + index_1 + 1
+    index_list = []
+    for i in range(len(sensitivity)):
+        row = i
+        for k in range(len(transition_list)-1):
+            if transition_list[k] <= row < transition_list[k+1]:
+                index_1 = k 
+        index_2 = row - transition_list[index_1] + index_1 + 1
+        print(index_1,index_2)
+        index_list.append([index_1,index_2])
     
-    index_alternative_1 = index_1
-    index_alternative_2 = index_2
-    index_criterion = criterion
+    save_indexes = []
+    for i in range(len(index_list)):
+        if index_list[i][0] == index_winner or index_list[i][1] == index_winner:
+            save_indexes.append(i)
+    value = 100
     
-    return value, index_alternative_1, index_alternative_2, index_criterion
-    
+    for i in range(len(save_indexes)): 
+        for j in range(len(sensitivity[0])): 
+            if type(sensitivity[save_indexes[i]][j]) == str:
+                 continue
+            elif abs(sensitivity[save_indexes[i]][j]) <= abs(value): 
+                value = sensitivity[save_indexes[i]][j]
+                criterion_index = j 
+                alternative_1_index = index_list[save_indexes[i]][0]
+                alternative_2_index = index_list[save_indexes[i]][1]
+                
+    return value, criterion_index, alternative_1_index, alternative_2_index  
 
-    
-   
-        
-        
-    
-
-        
-    
-        
-    
-    
-    
 # def WPM(matrix,weights):
 #     P = []
 #     countlist = []
@@ -205,8 +199,15 @@ test_WSM(matrix_test,weights_test)
 test_winner_WSM(matrix_test,weights_test)
 test_sensitivity_WSM(matrix_test,weights_test)
 
-sens = sensitivity_WSM(matrix_test,weights_test)
-test = find_critical_criterion(matrix_test,sens)
+matrix = matrix_test
+weights = weights_test
+sensitivity = sensitivity_WSM(matrix,weights)
+    
+ 
+    
+
+    
+    
 
 
         

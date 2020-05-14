@@ -75,41 +75,48 @@ def sensitivity_WSM(matrix,weights):
                     
     return sensitivity_matrix
 
-def find_critical_criterion(normalized_matrix,sensitivity_matrix):
-    # Arbitrary starting value 
-    value = 100
-    for i in range(len(sensitivity_matrix)):
-        for j in range(len(sensitivity_matrix[i])):
-            if type(sensitivity_matrix[i][j]) == str:
-                continue
-            else:
-                if abs(sensitivity_matrix[i][j]) <= abs(value): 
-                    value = sensitivity_matrix[i][j]
-                    row = i 
-                    criterion = j
-    row = 0
-    total = len(sensitivity_matrix)
-    n_alternatives = len(normalized_matrix)
-    i = 1
+def find_critical_criterion(matrix,weights,sensitivity):
+    P = WSM(matrix,weights)
+    index_winner = winner_WSM(P)
+    
+    j = 1
     transition_list = [0]
     transition = 0
+    total = len(sensitivity)
+    n_alternatives = len(matrix)
     
     while total > 0: 
-        total = total - (n_alternatives-i)
-        transition = transition + (n_alternatives - i)
+        total = total - (n_alternatives-j)
+        transition = transition + (n_alternatives - j)
         transition_list.append(transition)
-        i = i + 1 
+        j = j + 1 
     
-    for i in range(len(transition_list)-1):
-        if transition_list[i] <= row < transition_list[i+1]:
-            index_1 = i 
-    index_2 = row - transition_list[index_1] + index_1 + 1
+    index_list = []
+    for i in range(len(sensitivity)):
+        row = i
+        for k in range(len(transition_list)-1):
+            if transition_list[k] <= row < transition_list[k+1]:
+                index_1 = k 
+        index_2 = row - transition_list[index_1] + index_1 + 1
+        index_list.append([index_1,index_2])
     
-    index_alternative_1 = index_1
-    index_alternative_2 = index_2
-    index_criterion = criterion
+    save_indexes = []
+    for i in range(len(index_list)):
+        if index_list[i][0] == index_winner or index_list[i][1] == index_winner:
+            save_indexes.append(i)        
+    value = 100
     
-    return value, index_alternative_1, index_alternative_2, index_criterion
+    for i in range(len(save_indexes)): 
+        for j in range(len(sensitivity[0])): 
+            if type(sensitivity[save_indexes[i]][j]) == str:
+                 continue
+            elif abs(sensitivity[save_indexes[i]][j]) <= abs(value): 
+                value = sensitivity[save_indexes[i]][j]
+                criterion_index = j 
+                alternative_1_index = index_list[save_indexes[i]][0]
+                alternative_2_index = index_list[save_indexes[i]][1]
+                
+    return value, criterion_index, alternative_1_index, alternative_2_index  
 
 # =============================================================================
 #  Parameters 
@@ -340,6 +347,8 @@ matrix_AD_normalized = np.transpose(matrix_AD_normalized_transposed)
 # Assigning weights to the criteria (THESE HAVE BEEN SELECTED BASED ON ENGINEERING JUDGEMENT!). Weighted Product Model requires the sum of the weights to equal 1.
 weights_A = [0.3,0.05,0.1,0.25,0.3]
 weights_D = [0.5,0.05,0.1,0.1,0.3]
+criterion_A = ["Cl/Cd @ Cldes", "Cmac", "Clmax", "Alpha stall", "(t/c)_max"]
+criterion_D = criterion_A
 
 # Calculating the scores of each alternative based on the normalized Weighted Sum Model. 
 P_WSM_A = WSM(matrix_AD_normalized,weights_A)
@@ -350,7 +359,7 @@ airfoil_A_WSM = airfoils_AD[index_A]
 
 # WSM AD Sensitivity analysis 
 sensitivity_matrix_A = sensitivity_WSM(matrix_AD_normalized,weights_A)
-critical_criterion_value_A ,alternative_1_A, alternative_2_A, critical_criterion_A_index = find_critical_criterion(matrix_AD_normalized,sensitivity_matrix_A)
+critical_criterion_value_A,critical_criterion_A_index, alternative_1_A, alternative_2_A,  = find_critical_criterion(matrix_AD_normalized,weights_A,sensitivity_matrix_A)
 
 # Calculating the scores of each alternative based on the normalized Weighted Sum Model. 
 P_WSM_D = WSM(matrix_AD_normalized,weights_D)
@@ -361,7 +370,7 @@ airfoil_D_WSM = airfoils_AD[index_D]
 
 # WSM AD Sensitivity analysis 
 sensitivity_matrix_D = sensitivity_WSM(matrix_AD_normalized,weights_D)
-critical_criterion_value_D ,alternative_1_D, alternative_2_D, critical_criterion_D_index = find_critical_criterion(matrix_AD_normalized,sensitivity_matrix_D)
+critical_criterion_value_D,critical_criterion_D_index, alternative_1_D, alternative_2_D,  = find_critical_criterion(matrix_AD_normalized,weights_D,sensitivity_matrix_D)
 
 # =============================================================================
 # Performing an MCDM for concept C (as t/c is not a criterion for C)
@@ -422,7 +431,7 @@ airfoil_C_WSM = airfoils_C[index_C]
 
 # WSM AD Sensitivity analysis 
 sensitivity_matrix_C = sensitivity_WSM(matrix_C_normalized,weights_C)
-critical_criterion_value_C ,alternative_1_C, alternative_2_C, critical_criterion_C_index = find_critical_criterion(matrix_C_normalized,sensitivity_matrix_C)
+critical_criterion_value_C,critical_criterion_C_index, alternative_1_C, alternative_2_C,  = find_critical_criterion(matrix_C_normalized,weights_C,sensitivity_matrix_C)
 
 # =============================================================================
 # Compiling a .txt file with all selected airfoil data for the other departments
@@ -432,8 +441,12 @@ final_file.close()
 final_file = open("finalresults.txt","w")
 final_file_lines_A = ["FINAL AIRFOIL SELECTION RESULTS","\n","\n","Concept A: NACA"+airfoil_A_WSM,"\n", "Cl/Cd @ Cldes = "+str(round(float(airfoil_results_AD[index_A][1]),1)),"\n", "Cmac = "+str(round(float(airfoil_results_AD[index_A][2]),4)),"\n","Alpha cruise = "+str(round(float(airfoil_results_AD[index_A][2]),3)),"\n", "Cl_max @ Re_transition = "+str(round(float(airfoil_results_AD[index_A][3]),1)),"\n","Alpha stall @ Re_transition = "+str(round(float(airfoil_results_AD[index_A][4]),1))]
 final_file.writelines(final_file_lines_A)
-final_file_lines_D = ["\n","\n","Concept A: NACA"+airfoil_D_WSM,"\n", "Cl/Cd @ Cldes = "+str(round(float(airfoil_results_AD[index_D][1]),1)),"\n", "Cmac = "+str(round(float(airfoil_results_AD[index_D][2]),4)),"\n","Alpha cruise = "+str(round(float(airfoil_results_AD[index_D][2]),3)),"\n", "Cl_max @ Re_transition = "+str(round(float(airfoil_results_AD[index_D][3]),1)),"\n","Alpha stall @ Re_transition = "+str(round(float(airfoil_results_AD[index_D][4]),1))]
+final_file_lines_A_sensitivity = ["\n","The most critical criterion is "+str(criterion_A[critical_criterion_A_index])+". This criterion should be changed by "+str(critical_criterion_value_A)+"% to swap the ranking of "+str(airfoils_C[alternative_1_A])+" and "+str(airfoils_C[alternative_2_A])]
+final_file.writelines(final_file_lines_A_sensitivity)
+final_file_lines_D = ["\n","\n","Concept D: NACA"+airfoil_D_WSM,"\n", "Cl/Cd @ Cldes = "+str(round(float(airfoil_results_AD[index_D][1]),1)),"\n", "Cmac = "+str(round(float(airfoil_results_AD[index_D][2]),4)),"\n","Alpha cruise = "+str(round(float(airfoil_results_AD[index_D][2]),3)),"\n", "Cl_max @ Re_transition = "+str(round(float(airfoil_results_AD[index_D][3]),1)),"\n","Alpha stall @ Re_transition = "+str(round(float(airfoil_results_AD[index_D][4]),1))]
 final_file.writelines(final_file_lines_D)
+final_file_lines_D_sensitivity = ["\n","The most critical criterion is "+str(criterion_D[critical_criterion_D_index])+". This criterion should be changed by "+str(critical_criterion_value_D)+"% to swap the ranking of "+str(airfoils_C[alternative_1_D])+" and "+str(airfoils_C[alternative_2_D])]
+final_file.writelines(final_file_lines_D_sensitivity)
 final_file_lines_C = ["\n","\n","Concept C: "+airfoil_C_WSM,"\n", "Cl/Cd @ Cldes = "+str(round(float(airfoil_results_C[index_C][1]),1)),"\n", "Cmac = "+str(round(float(airfoil_results_C[index_C][2]),4)),"\n","Alpha cruise = "+str(round(float(airfoil_results_C[index_C][2]),3)),"\n", "Cl_max @ Re_transition = "+str(round(float(airfoil_results_C[index_C][3]),1)),"\n","Alpha stall @ Re_transition = "+str(round(float(airfoil_results_C[index_C][4]),1))]
 final_file.writelines(final_file_lines_C)
 final_file_lines_C_sensitivity = ["\n","The most critical criterion is "+str(criterion_C[critical_criterion_C_index])+". This criterion should be changed by "+str(critical_criterion_value_C)+"% to swap the ranking of "+str(airfoils_C[alternative_1_C])+" and "+str(airfoils_C[alternative_2_C])]
