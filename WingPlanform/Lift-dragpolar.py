@@ -47,3 +47,32 @@ e_28 = CL_28**2/(np.pi*AR*CDi_28)
 #%%
 
 
+AR = 9/1.3
+data_14 = np.loadtxt("ConceptC_T1-14_0 m_s-VLM2.txt",skiprows=1)
+
+alpha_14 = data_14[:,0]
+CL_14 = data_14[:,2]
+CD_14 = data_14[:,5]
+CDi_14 = data_14[:,3]
+
+e_14 = CL_14**2/(np.pi*AR*CDi_14)
+
+a,b = curve_fit(linear,alpha_14,CL_14)[0]
+
+
+data_28 = np.loadtxt("ConceptC_T1-28_0 m_s-VLM2.txt",skiprows=1)
+
+alpha_28 = data_28[:,0]
+CL_28 = data_28[:,2]
+CD_28 = data_28[:,5]
+CDi_28 = data_28[:,3]
+
+
+coeff_28 = curve_fit(polarf,CL_28,CD_28)[0]
+
+
+CD0_28 = coeff_28[1]
+e_28 = CL_28**2/(np.pi*AR*CDi_28)
+
+CD_28 += 0.002588
+
