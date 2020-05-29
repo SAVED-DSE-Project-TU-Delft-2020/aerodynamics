@@ -16,6 +16,9 @@ ASSUMPTIONS:
 import numpy as np 
 from isacalculator import compute_isa 
 from scipy.interpolate import interp1d
+from matplotlib import pyplot as plt
+import seaborn as sns
+sns.set() 
 
 # =============================================================================
 # Functions 
@@ -116,7 +119,7 @@ def find_critical_criterion(matrix,weights,sensitivity):
     return value, criterion_index, alternative_1_index, alternative_2_index  
 # =============================================================================
 # Parameters
-m = 17.49525
+m = 17.49525                                                                                    
 W_S = 122.23
 S = (m*9.81)/W_S
 V_cruise = 28
@@ -141,7 +144,7 @@ Re_transition = compute_reynolds(rho_transition,V_transition,c_mgc,mu_cruise)
 
 # Computing the design lift coefficient 
 cldes = compute_cldes(m,rho_cruise,V_cruise,sweep)
-NACAdigit1 = round(Cldes*20/3,0)
+NACAdigit1 = round(cldes*20/3,0)
 
 # Clear file from last run
 file = open('airfoilanalysisresultsdetailed.txt', 'w')
@@ -184,7 +187,7 @@ for i in range(len(airfoils)):
  
     cm25_asfunctionof_alpha = interp1d(alpha,cm25)
     cmac = float(cm25_asfunctionof_alpha(alpha_at_cl0))
- 
+    
     cl_cd_asfunctionof_alpha = interp1d(alpha,cl_cd)
     cl_cd_at_cldes = cl_cd_asfunctionof_alpha(alpha_at_cldes)
  
@@ -208,17 +211,144 @@ for i in range(len(airfoils)):
 file.writelines(file_results)
 file.close()
 
-
 # =============================================================================
 # Perform a MCDM. The WSM will be used     
+# Normalizing Cl/Cd according to a linear scoring function 
+clcd = []
+for i in range(len(airfoil_results)):
+    clcd.append(airfoil_results[i][1])
 
-    
-    
-
-
+dydx_clcd = compute_dydx(clcd)
+b_clcd = compute_b(dydx_clcd,clcd)
  
+clcd_normalised = []
+
+for i in range(len(clcd)):
+    clcd_normalised.append(clcd[i]*dydx_clcd+b_clcd)
+    
+# Normalizing Cmac according to a linear scoring function 
+cmac = []
+for i in range(len(airfoil_results)):
+    cmac.append(airfoil_results[i][2])
+ 
+dydx_cmac = compute_dydx(cmac)
+b_cmac = compute_b(dydx_cmac,cmac)
+
+cmac_normalised = []
+ 
+for i in range(len(cmac)):
+    cmac_normalised.append(cmac[i]*dydx_cmac+b_cmac)
+     
+# Normalizing Clmax according to a linear scoring function 
+clmax = []
+for i in range(len(airfoil_results)):
+    clmax.append(airfoil_results[i][4])
+
+dydx_clmax = compute_dydx(clmax)
+b_clmax = compute_b(dydx_clmax,clmax)
+
+clmax_normalised = []
+ 
+for i in range(len(clmax)):
+    clmax_normalised.append(clmax[i]*dydx_clmax+b_clmax)
+    
+# Normalizing alphastall according to a linear scoring function 
+alphastall = []
+for i in range(len(airfoil_results)):
+    alphastall.append(airfoil_results[i][5])
+
+dydx_alphastall = compute_dydx(alphastall)
+b_alphastall = compute_b(dydx_alphastall,alphastall)
+
+alphastall_normalised = []
+
+for i in range(len(alphastall)):
+    alphastall_normalised.append(alphastall[i]*dydx_alphastall+b_alphastall)
+    
+# Normalizing t/c according to a linear scoring function 
+t_c = []
+for i in range(len(airfoil_results)): 
+    t_c.append(airfoil_results[i][6])
+
+dydx_t_c = compute_dydx(t_c)
+b_t_c = compute_b(dydx_t_c,t_c)
+
+t_c_normalised = []
+for i in range(len(t_c)):
+    t_c_normalised.append(t_c[i]*dydx_t_c+b_t_c)
+    
+# Creating a normalized Measure of Performance Matrx for A and D. Number (M) of alternatives (A) = 42. Number (N) of Criteria (C) = 5.
+matrix_normalized_transposed = np.array([clcd_normalised,cmac_normalised,clmax_normalised,alphastall_normalised,t_c_normalised])
+matrix_normalized = np.transpose(matrix_normalized_transposed)
+ 
+# Assigning weights to the criteria (THESE HAVE BEEN SELECTED BASED ON ENGINEERING JUDGEMENT!). Weighted Product Model requires the sum of the weights to equal 1.
+weights = [0.5,0.05,0.05,0.2,0.2]
+criterion = ["Cl/Cd @ Cldes", "Cmac", "Clmax", "Alpha stall", "(t/c)_max"]
 
 
+# Calculating the scores of each alternative based on the normalized Weighted Sum Model. 
+P_WSM = WSM(matrix_normalized,weights)
+index = winner_WSM(P_WSM)
+
+print("The best airfoil according to the WSM is the "+airfoils[index][0])
+airfoil_WSM = airfoils[index][0]
+
+# WSM AD Sensitivity analysis 
+sensitivity_matrix = sensitivity_WSM(matrix_normalized,weights)
+critical_criterion_value,critical_criterion_index, alternative_1, alternative_2,  = find_critical_criterion(matrix_normalized,weights,sensitivity_matrix)
+
+# Compiling a .txt file with all selected airfoil data for the other departments
+final_file = open("finalresultsV2.txt", "w")
+final_file.close()
+
+final_file = open("finalresultsV2.txt","w")
+final_file_lines = ["FINAL AIRFOIL SELECTION RESULTS","\n","\n",airfoil_WSM,"\n", "Cl/Cd @ Cldes = "+str(round(float(airfoil_results[index][1]),1)),"\n", "Cmac = "+str(round(float(airfoil_results[index][2]),4)),"\n","Alpha cruise = "+str(round(float(airfoil_results[index][3]),3)),"\n", "Cl_max @ Re_transition = "+str(round(float(airfoil_results[index][4]),1)),"\n","Alpha stall @ Re_transition = "+str(round(float(airfoil_results[index][5]),1)),"\n","(t/c)_max = "+str(airfoils[index][1])]
+final_file.writelines(final_file_lines)
+final_file_lines_sensitivity = ["\n","The most critical criterion is "+str(criterion[critical_criterion_index])+". This criterion should be changed by "+str(critical_criterion_value)+"% to swap the ranking of "+str(airfoils[alternative_1][0])+" and "+str(airfoils[alternative_2][0])]
+final_file.writelines(final_file_lines_sensitivity)
+final_file.close()
+
+# =============================================================================
+# Plotting the lift curve and the lift drag polar of the winning airfoil at both the cruise and stall Reynolds number 
+plot_file_cruise = airfoils[index][0]+".txt"
+plot_file_stall = airfoils[index][0]+"t.txt"
+
+cruise_data_transposed = np.genfromtxt(plot_file_cruise)
+cruise_data = np.transpose(cruise_data_transposed)
+stall_data_transposed = np.genfromtxt(plot_file_stall)
+stall_data = np.transpose(stall_data_transposed)
+
+alpha_cruise = cruise_data[0][8:]
+cl_cruise = cruise_data[1][8:]
+cd_cruise = cruise_data[2][8:]
+
+alpha_stall = stall_data[0][8:]
+cl_stall = stall_data[1][8:]
+cd_stall = stall_data[2][8:]
+
+liftdragpolar = plt.figure(figsize = (10,5),dpi = 250)
+plt.scatter(cd_cruise,cl_cruise, label = "Re = 860000",color = "blue",marker = "^")
+plt.plot(cd_cruise,cl_cruise,color = "blue")
+plt.scatter(cd_stall,cl_stall, label = "Re = 450000",color = "red")
+plt.plot(cd_stall,cl_stall,color = "red")
+plt.xlabel("$C_d$ [-]")
+plt.ylabel("$C_l$ [-]")
+plt.legend()
+plt.savefig("liftdragpolar.png")
+
+liftcurve = plt.figure(figsize = (10,5),dpi = 250)
+plt.scatter(alpha_cruise,cl_cruise, label = "Re = 860000",color = "blue",marker = "^")
+plt.plot(alpha_cruise,cl_cruise,color = "blue")
+plt.scatter(alpha_stall,cl_stall, label = "Re = 450000",color = "red")
+plt.plot(alpha_stall,cl_stall,color = "red")
+plt.xlabel(r"$\alpha$  [-]")
+plt.ylabel("$C_l$ [-]")
+plt.legend()
+plt.savefig("liftcurve.png")
+
+# =============================================================================
+# END
+print("Airfoil selection finished, see results file in directory")
 
 
 
