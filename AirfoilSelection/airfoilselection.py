@@ -252,6 +252,7 @@ for i in range(len(airfoils_C)):
     alpha_asfunctionof_cl = interp1d(cl,alpha)
  
     alpha_at_cl0 = float(alpha_asfunctionof_cl(0))
+    print(alpha_at_cl0,airfoil)
     alpha_at_cldes = float(alpha_asfunctionof_cl(cldes_C))
     alpha_cruise = alpha_at_cldes
  
