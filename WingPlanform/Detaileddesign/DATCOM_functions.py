@@ -31,14 +31,23 @@ def compute_ARcondition(C1,LE_sw,AR):
         return "Low AR"
 
 # ---------------------------------- AoA ----------------------------------- #
+        
+def compute_AOA_0_lift(clalpha,cldes,aoa_des):
+    '''
+    No twist present
+    '''
+    return aoa_des - cldes/clalpha
 
-def compute_AOA_zerolift
-
+def compute_AOA_0_lift_tw(aoa0_theta,theta,aoa_zero):
+    '''
+    aoa0_theta from Figure 4.1.3.1-4 p.437-438
+    '''
+    return aoa_zero + aoa0_theta * theta
 # ---------------------------------- Lift ---------------------------------- #
 #===========High AR CLalpha===================================================
     
 def compute_CLa(AR,HC_sw):
-    return 2*np.pi*AR/(2+np.sqrt((AR/0.95)**2*(1+np.tan(HC_sw*np.pi/180)**2) + 4)) * np.pi/180
+    return 2*np.pi*AR/(2+np.sqrt((AR/0.95)**2*(1+np.tan(HC_sw*np.pi/180)**2) + 4))
 
 #===========Low AR CLalpha====================================================
     
@@ -93,12 +102,12 @@ def compute_CLmax_low(CLmax_base,delta_CLmax):
     '''
     return CLmax_base + delta_CLmax
 
-def compute_alpha_stall_low(alpha_stall_base,delta_alpha):
+def compute_aoa_stall_low(aoa_stall_base,delta_aoa):
     '''
-    alpha_stall_base from Figure 4.1.3.4-25a p.589
-    delta_alpha from Figure 4.1.3.4-25b p.589
+    aoa_stall_base from Figure 4.1.3.4-25a p.589
+    delta_aoa from Figure 4.1.3.4-25b p.589
     '''
-    return alpha_stall_base + delta_alpha
+    return aoa_stall_base + delta_aoa
 
 #===========Stall characteristics for high AR=================================
 
@@ -109,11 +118,11 @@ def compute_CLmax_high(CL_cl,clmax,delta_CLmax):
     '''
     return CL_cl*clmax + delta_CLmax
 
-def compute_alpha_stall_high(CLmax,CLalpha,aoa_0,delta_alpha):
+def compute_aoa_stall_high(CLmax,CLalpha,aoa_0,delta_aoa):
     '''
-    delta_alpha from Figure 4.1.3.4-21b p.585
+    delta_aoa from Figure 4.1.3.4-21b p.585
     '''
-    return CLmax/CLalpha + aoa_0 + delta_alpha
+    return 180*CLmax/CLalpha/np.pi + aoa_0 + delta_aoa
 
 #===========CL below stall====================================================
 
@@ -127,6 +136,11 @@ def compute_Jpar(C1,C2,LE_sw,AR):
     '''
     return 0.3*(C1+1)*AR*np.cos(LE_sw*np.pi/180)*((C1+1)*(C2+1)-((C2+1)*AR*np.tan(LE_sw*np.pi/180)/7)**3)
 
+def compute_linear(xb,xe,yb,ye,x):
+    a = (ye - yb)/(xe - xb)
+    y0 = yb - a*xb
+    return a * x + y0
+    
 def compute_CNaa_ref(CN_prime,CLalpha,aoa_stall):
     '''
     CN_prime @ CLmax
@@ -153,9 +167,9 @@ def compute_CNaa_after(CNaa_ref,CNaa_90,aoa_stall,aoa,D,CLalpha,CLmax,CLmax_low)
 
 
 def compute_CN_prime(CLalpha,aoa,CNaa):
-    return CLalpha*np.sin(2*np.pi*aoa/180) + CNaa*np.sin(np.pi*aoa/180)*np.abs(np.sin(np.pi*aoa/180))  
+    return CLalpha*np.sin(2*np.pi*aoa/180)/2 + CNaa*np.sin(np.pi*aoa/180)**2
 
-def compute_CL_below(CN_prime,aoa):
+def compute_CL(CN_prime,aoa):
     return CN_prime*np.cos(aoa*np.pi/180)
 
 # ---------------------------------- Drag ---------------------------------- #
@@ -173,14 +187,14 @@ def compute_CD0_wing(Cf,tc_avg,x_tcmax,Swet,Sref,Rls):
 
 #===========CD0 of the body===================================================
 
-def compute_CD0_body(Cf,lb,Sb,Ss,db):
+def compute_CD0_body(Cf,lb,Ss_Sb,Sb,db):
     '''
     Cf from Figure 4.1.5.1-26/27 p.687-688
-    Ss/Sb from Figure 2.3-2 and 2.3-3 p.179-180
+    Ss_Sb from Figure 2.3-2 and 2.3-3 p.179-180 (879)
     '''
     d = np.sqrt(Sb/0.7854)
     
-    return Cf*(1+60/(lb/d)**3 + 0.0025*lb/d)*Ss/Sb
+    return Cf*(1+60/(lb/d)**3 + 0.0025*lb/d)*Ss_Sb
 
 #===========Lift induced drag of the wing=====================================
 
