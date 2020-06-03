@@ -120,7 +120,7 @@ def find_critical_criterion(matrix,weights,sensitivity):
     return value, criterion_index, alternative_1_index, alternative_2_index  
 # =============================================================================
 # Parameters
-m = 17.49525                                                                                    
+m = 17.536                                                                                    
 W_S = 122.23
 S = (m*9.81)/W_S
 V_cruise = 28
@@ -134,7 +134,7 @@ p_cruise,rho_cruise,T_cruise = compute_isa(h_cruise)
 mu_cruise = 17.73e-6                                                    
 mu_cruise = 17.73e-6                                                  
 mu_transition= 1.7955e-5 
-sweep = 25* np.pi / 180
+sweep = 20* np.pi / 180
 
 # =============================================================================
 # MAIN PROGRAM 
@@ -206,7 +206,7 @@ for i in range(len(airfoils)):
     
     airfoil_results.append([airfoil[0],float(cl_cd_at_cldes),float(cmac),float(alpha_cruise),float(cl_max),float(alpha_stall),airfoil[1]])
     
-    result = "\n"+airfoil[0]+": (Cl/Cd)_max @ Cldes = "+str(round(float(cl_cd_at_cldes),1))+", Cmac = "+str(round(float(cmac),4))+", alpha_cruise = "+str(round(float(alpha_cruise),2))+", Cl_max @ transition = "+str(round(float(cl_max),2))+", alpha_stall @transition = "+str(round(float(alpha_stall),1))+" ,(t/c)_max = "+str(round(float(airfoil[1]),1))
+    result = "\n"+airfoil[0]+": (Cl/Cd)_max @ Cldes = "+str(round(float(cl_cd_at_cldes),1))+", Cmac = "+str(round(float(cmac),4))+", alpha_cruise = "+str(round(float(alpha_cruise),2))+", Cl_max @ transition = "+str(round(float(cl_max),2))+", alpha_stall @transition = "+str(round(float(alpha_stall),1))+" ,(t/c)_max = "+str(round(float(airfoil[1]),1))+" alpha_l=0 = "+str(round(float(alpha_at_cl0),2))
     file_results.append(result)
     
 file.writelines(file_results)
@@ -360,6 +360,7 @@ def linear(x,a,b):
 alpha_cruise_fit = alpha_cruise[2:40]
 cl_cruise_fit = cl_cruise[2:40]
 cl_alpha, cl0 = curve_fit(linear,alpha_cruise_fit,cl_cruise_fit)
+
 
 
 
