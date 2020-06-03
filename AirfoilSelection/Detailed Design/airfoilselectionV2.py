@@ -18,6 +18,7 @@ from isacalculator import compute_isa
 from scipy.interpolate import interp1d
 from matplotlib import pyplot as plt
 import seaborn as sns
+from scipy.optimize import curve_fit
 sns.set() 
 
 # =============================================================================
@@ -350,7 +351,15 @@ plt.savefig("liftcurve.png")
 # END
 print("Airfoil selection finished, see results file in directory")
 
+# =============================================================================
+# Curve fitting to obtain cl_alpha
 
+def linear(x,a,b):
+    return a*x + b
+
+alpha_cruise_fit = alpha_cruise[2:40]
+cl_cruise_fit = cl_cruise[2:40]
+cl_alpha, cl0 = curve_fit(linear,alpha_cruise_fit,cl_cruise_fit)
 
 
 

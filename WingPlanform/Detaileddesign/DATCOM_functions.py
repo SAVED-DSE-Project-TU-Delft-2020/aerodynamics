@@ -13,6 +13,9 @@ import matplotlib.pyplot as plt
 def compute_sweep(LE_sw,taper,x_c,cr,b):
     return (np.tan(LE_sw*np.pi/180) - x_c*2*cr/b*(1-taper))*180/np.pi
 
+def compute_cldes(m,rho,V,QC_sw,S):
+    return (1.1*m*9.81)/(S*0.5*rho*(V*np.cos(QC_sw*np.pi/180))**2)
+
 #===========AR condition======================================================
 def compute_C1(taper):
     '''
@@ -27,6 +30,9 @@ def compute_ARcondition(C1,LE_sw,AR):
     else:
         return "Low AR"
 
+# ---------------------------------- AoA ----------------------------------- #
+
+def compute_AOA_zerolift
 
 # ---------------------------------- Lift ---------------------------------- #
 #===========High AR CLalpha===================================================
