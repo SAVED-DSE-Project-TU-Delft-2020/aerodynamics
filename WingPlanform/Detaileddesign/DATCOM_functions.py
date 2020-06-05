@@ -14,7 +14,7 @@ def compute_sweep(LE_sw,taper,x_c,cr,b):
     return (np.tan(LE_sw*np.pi/180) - x_c*2*cr/b*(1-taper))*180/np.pi
 
 def compute_cldes(m,rho,V,QC_sw,S):
-    return (1.1*m*9.81)/(S*0.5*rho*(V*np.cos(QC_sw*np.pi/180))**2)
+    return (m*9.81)/(S*0.5*rho*(V*np.cos(QC_sw*np.pi/180))**2)
 
 #===========AR condition======================================================
 def compute_C1(taper):
@@ -187,7 +187,7 @@ def compute_CD0_wing(Cf,tc_avg,x_tcmax,Swet,Sref,Rls):
 
 #===========CD0 of the body===================================================
 
-def compute_CD0_body(Cf,lb,Ss_Sb,Sb,db):
+def compute_CD0_body(Cf,lb,Ss_Sb,Sb):
     '''
     Cf from Figure 4.1.5.1-26/27 p.687-688
     Ss_Sb from Figure 2.3-2 and 2.3-3 p.179-180 (879)
@@ -196,19 +196,33 @@ def compute_CD0_body(Cf,lb,Ss_Sb,Sb,db):
     
     return Cf*(1+60/(lb/d)**3 + 0.0025*lb/d)*Ss_Sb
 
+#===========CD0 of the tail===================================================
+
+def compute_CD0_tail(Cf,tc_avg,x_tcmax,Swet,Sref,Rls):
+    '''
+    Cf from Figure 4.1.5.1-26/27 p.687-688
+    Rls from Figure 4.1.5.1-28b p.689 (1287)
+    
+    '''
+    if x_tcmax >= 0.3:
+        return Cf*(1+1.2*(tc_avg)+100*(tc_avg)**4)*Rls*Swet/Sref
+    else:
+        return Cf*(1+2*(tc_avg)+100*(tc_avg)**4)*Rls*Swet/Sref
+
+
 #===========Lift induced drag of the wing=====================================
 
 # Total CD0 is (CD0wing + CD0body)*Rwb, whereby Rwb is a correlation factor 
-# from Figure 4.3.3.1-37 
-def compute_CD_ind_wing(CL,AR,cla,v,w,theta,R,CLa):
+# from Figure 4.3.3.1-37 p.1104
+def compute_CD_ind_wing(CLalpha,AR,clalpha,v,w,theta,R,CL):
     '''
     v from Figures 4.1.5.2-42a-i p.737-742
     w from Figures 4.1.5.2-48a-i p.743-747
     R from Figure 4.1.5.2-53 p.748
 
     '''
-    e = 1.1*CLa/(AR*(R*CLa/AR + (1-R)*np.pi))
-    return CL**2/(np.pi*AR*e) + CL*theta*cla*v + (theta*cla)**2*w
+    e = 1.1*CLalpha/(AR*(R*CLalpha/AR + (1-R)*np.pi))
+    return CL**2/(np.pi*AR*e) + CL*theta*clalpha*v + (theta*clalpha)**2*w,e
 
 #===========Lift induced drag of the body=====================================
 
