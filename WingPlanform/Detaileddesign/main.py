@@ -20,7 +20,7 @@ import scipy.integrate as sc
 
 g       = 9.80665                                        # [m/s^2]
 h       = 500                                            # [m]
-twist   = True                                           # [-]
+twist   = False                                          # [-]
 
 #===========Varying Parameters================================================
 
@@ -70,13 +70,14 @@ if cond == 'High AR':
         aoa_0 = dc.compute_AOA_0_lift(clalpha,cldes,aoa_des)         # [deg]
     
     else:
-        aoa_zero = -cl0 / clalpha                                    # [deg]
+        aoa_des = (cldes - cl0)/clalpha                              # [deg]
+        aoa_zero = dc.compute_AOA_0_lift(clalpha,cldes,aoa_des)      # [deg]
         theta = -4                                                   # [deg]
         aoa0_theta = -0.39                                           # [-]
         aoa_0 = dc.compute_AOA_0_lift_tw(aoa0_theta,theta,aoa_zero)  # [deg]
     
     # Maximum lift coefficient parameters    
-    delta_y = 3.72                                                   # [-]
+    delta_y = 3.72     # Airfoil sharpness parameter                 # [-]
     CL_cl = 0.83                                                     # [-]
     delta_CLmax = 0                                                  # [-]
     CLmax = dc.compute_CLmax_high(CL_cl,clmax,delta_CLmax)           # [-]
@@ -88,7 +89,7 @@ if cond == 'High AR':
     # Lift coefficients below stall
     CN_prime_max = dc.compute_CN_prime_CLmax(CLmax,aoa_stall)        # [-]
     J = dc.compute_Jpar(C1,C2,LE_sw,AR)                              # [-]
-    aoa = np.linspace(-5,aoa_stall,10000)                         # [deg]
+    aoa = np.linspace(-5,aoa_stall,10000)                            # [deg]
     tan_ratio = np.tan(aoa*np.pi/180) / np.tan(aoa_stall*np.pi/180)  # [-]
     delta_CNaa = np.empty(len(aoa))                                  # [deg^-1]
     
@@ -105,7 +106,7 @@ if cond == 'High AR':
     
     
     # Wing parameters to calculate zero-lift drag coefficient of the wing
-    tc_avg = 0.0696                                                  # [-]
+    tc_avg = 0.1       # (Estimation)                             # [-]
     x_tcmax = 0.2494                                                 # [-]
     Sref = S                                                         # [m^2]
     Swet = 2*S                                                       # [m^2]
@@ -117,7 +118,7 @@ if cond == 'High AR':
 
     # Tail parameters to calculate zero-lift drag coefficient of the tail
     NACA0009 = np.loadtxt("NACA0009.txt")                            # [-]
-    tc_avg_t = np.mean(np.abs(NACA0009[:,1]))                        # [-]
+    tc_avg_t = 0.09                                                  # [-]
     x_tcmax_t = 0.2903                                               # [-]
     Swet_t = 2*S_t                                                   # [m^2]
     Cf_t = 0.006                                                     # [-]
@@ -128,27 +129,27 @@ if cond == 'High AR':
     
     # Body parameters to calculate zero-lift drag coefficient of the body
     lb = 0.743                                                       # [m]
-    d = 0.379                                                        # [m]
-    h = 0.167                                                        # [m]
+    d = 0.379    # Max diameter                                      # [m]
+    h = 0.167    # Max height                                        # [m]
     Cf_b = 0.0042                                                    # [-]
     Sb = np.pi * d * h * 0.25                                        # [m^2]
     Ss_Sb = 12.5                                                     # [-]
     CD0_body = dc.compute_CD0_body(Cf_b,lb,Ss_Sb,Sb)*Sb/Sref         # [-]
     
     # Total zero-lift drag coefficient
-    CD0 = CD0_wing + CD0_tail + CD0_body                             # [-]
-    # CD0 = 0.01
+    # CD0 = CD0_wing + CD0_tail + CD0_body                             # [-]
+    CD0 = 0.01
 
     # Lift induced drag and Oswald efficiency factor
     R = 0.94
     if twist == False:
         CDi_wing,e = dc.compute_CD_ind_wing(CLalpha,AR,clalpha,0,0,0,R,CL_below) # [-]
-        
+            
     else:
         CDi_wing,e = dc.compute_CD_ind_wing(CLalpha,AR,clalpha,0.000625,0.0019,theta,R,CL_below) # [-]
     
     # Total drag
-    CD = dc.compute_CD(CD0,CDi_wing)                                   # [-]
+    CD = dc.compute_CD(CD0,CDi_wing)                                 # [-]
     
     # Updated cruise speed
     V_cr_update = np.sqrt(MTOW*2/(rho*S*CL_below[np.argmax(CL_below/CD)])) # [m/s]
@@ -166,31 +167,9 @@ print("Updated cruise speed =",V_cr_update)
 
 
 # --------------------------- Extra Computations --------------------------- #
-# This is done to determine the average thickness
 
 data = np.loadtxt("CAL4014L.dat")
-res = [data[:,1][i] for i in range(len(data[:,0]))]
-neg = []
-pos = []
-for i in res:
-    if i<0:
-        neg.append(i)
-    else:
-        pos.append(i)
 
-neg = np.array(neg)
-pos = np.array(pos)
 
-lists = []
-ilist = []
-maxlist = []
-    # while len(pos) >= 1:
-    #     for i in range(len(pos)):
-    #         lists.append(np.max(pos[i] - neg))
-    #     maxlist.append(np.max(lists))
-    #     pos = np.delete(pos,np.argmax(lists))
-    #     lists = []
-        
-        
-        
-    # NACA0009 = np.loadtxt("NACA0009.txt")
+# https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=&cad=rja&uact=8&ved=2ahUKEwiFvvr06-rpAhWPzKQKHSQyAJQQFjABegQIAhAB&url=https%3A%2F%2Fwww.mdpi.com%2F2076-3417%2F9%2F15%2F3043%2Fpdf&usg=AOvVaw1BMA1rrBr4OXRl5WVuMs9s
+# dc.compute_CD0_wing(test_cf,0.098,0.276,2*1.07,1.07,1.06)
