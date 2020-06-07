@@ -6,7 +6,7 @@ Created on Tue Jun  2 19:36:57 2020
 """
 import numpy as np 
 
-a = [[1,2,3],[3,4,5],[2,3,1]]
-b = [[1],[1],[1]]
+a = np.array([[1],[1],[1]])
+b = np.array([[2],[2],[2]])
 
-x = np.linalg.solve(a,b)
+assert np.allclose(a,b,rtol = 0.0001)

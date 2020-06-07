@@ -1,0 +1,19 @@
+The limitations to the adapted LL model are as follows: 
+
+- clalpha of the airfoil has been assumed to be one fixed value. In reality, clalpha changes with the Reynolds number of the flow and therefore along the chord of the wing. A more accurate representation of clalpha for future considerations would therefore be to implement it as a function of the Reynolds number and therefore the chord. 
+- Dihedral, this is not incoroprated in the adapted LL model 
+- Sweep, this is not incorporated in the adapted LL model 
+- Only small angle of attack due to linerisation assumptions. 
+- Due to actuator disk theory, the vertical variation of velocity can not be taken into account 
+
+
+
+Questions: 
+
+- Because the LL doesn't model sweep, should I take the effective velocity: Vcos(Lambda) as the freestream velocity speed? 
+
+To do: 
+
+- Iduce 2D correction factor on the local lift 
+- CD0 approximation implementation 
+

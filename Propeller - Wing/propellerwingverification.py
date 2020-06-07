@@ -14,16 +14,6 @@ Verification of the LL model: XFLR5
 
 """
 # =============================================================================
-# SWITCHES 
-""" 
-Switch the propellers on or off:
-    PROPELLERS = True : Propellers are turned on 
-    PROPELLERS = False: Propellers are turned off
-"""
-
-PROPELLERS = True   
-
-# =============================================================================
 # Importing relevant modules 
 import numpy as np 
 from isacalculator import compute_isa
@@ -31,8 +21,15 @@ from matplotlib import pyplot as plt
 from scipy.interpolate import interp1d
 from numpy.linalg import lstsq
 import seaborn as sns
-import statsmodels.api as sm 
 sns.set()
+
+# Verifying the LL method 
+V_verification = 28 
+c_verification = 0.5
+b_verification = 2.5
+S_verification = b_verification*c_verification 
+AR_verification = b_verification**2/S_verification
+mu_verification = 17.73e-6                                                    
 
 # =============================================================================
 # Parameters 
@@ -46,99 +43,72 @@ p_cruise,rho_cruise,Temp_cruise = compute_isa(h_cruise)     # [Pa],[kg/m^3],[K].
 p_stall, rho_stall, T_stall = compute_isa(h_stall)          # [Pa],[kg/m^3],[K]. Stall air pressure, density, and temperature
 p_VTOL,rho_VTOL,T_VTOL = compute_isa(h_VTOL)                # [Pa],[kg/m^3],[K]. VTOl air pressure, density, and temperature 
 M_cruise = V_cruise/np.sqrt(1.4*287*Temp_cruise)            # [-]. Cruise Mach number
-b = 3                                                       # [m]. Wing span
+b = 2.5                                                      # [m]. Wing span
+c_root = 0.5
+c_tip = 0.5
+taper = 1
+S = b*c_root
+AR = b**2/S
 W_S = 122.23                                                # [N/m^2]. Wing loading 
 m = 17.53                                                   # [kg]. MTOM
-S = m*9.81/W_S                                              # [m^2]. Wing surface area 
 twist = 0                                                   # [deg]. Wing tip twist angle (linear distribution)
-AR = b**2/S                                                 # [-]. Wing aspect ratio 
-taper = 0.35                                                # [-]. Wing taper ratio 
-t_c = 0.10                                                  # [-]. Wing airfoil maximum thickness over chord ratio.
-c_root = 2*S/(b*(1+taper))                                  # [m]. Wing root chord                
-c_tip = c_root*taper                                        # [m]. Wing tip chord
+alpha_l0 = 0                                                # [rad]. Wing airfoil zero lift angle of attack.
+t_c = 0.12                                                  # [-]. Wing airfoil maximum thickness over chord ratio.
+
+data_transposed = np.genfromtxt("naca0012cla.txt")
+data = np.transpose(data_transposed)
+alpha_airfoil = data[0]
+cl_airfoil = data[1]
+alpha_airfoil_fit = alpha_airfoil[2:10]
+cl_airfoil_fit = cl_airfoil[2:10]
+clalpha = (cl_airfoil_fit[-1]-cl_airfoil_fit[0])/(alpha_airfoil_fit[-1]-alpha_airfoil_fit[0])*180/np.pi
+plt.plot(alpha_airfoil_fit,cl_airfoil_fit)
+
+Re_verification = rho_cruise*V_verification*c_verification/mu_verification
 
 # =============================================================================
 # Propeller actuator disk model.
 D_p = 0.3                                                   # [m]. Propeller disk diameter 
 R_p = D_p/2                                                 # [m]. Propeller disk radius 
 S_p = np.pi*R_p**2                                          # [m^2]. Propeller disk area 
-T_cruise = 20                                               # [N]. Propeller thrust during cruise 
-T_VTOL = 50                                                 # [N]. Propeller thrust during VTOL 
-N_p = 4                                                     # [-]. Number of propellers                                                  
-omega_cruise = 3                                            # [rad/s]. Propeller angular velocity during cruise            
-omega_VTOL = 3                                              # [rad/s]. Propeller angular velocity during VTOL 
+T_cruise = 10                                               # [N]. Propeller thrust during cruise 
+T_VTOL = 10                                                 # [N]. Propeller thrust during VTOL 
+N_p = 4                                                     # [-]. Amount of propellers                                                  
+omega_cruise = 60                                           # [rad/s]. Propeller angular velocity during cruise            
+omega_VTOL = 60                                             # [rad/s]. Propeller angular velocity during VTOL 
 
 # Wing discretization
-N = 1000                                                    # [-]. Number of spanwise wing stations. 
-K = 100                                                     # [-]. Number of Fourier modes used. N>K for a solvable system
-alpha_fly = 2                                               # [deg]. Geometric angle of attack. 
-dy = b/N                                                    # [m]. Width of panels 
-y = np.linspace(-b/2+dy/2,b/2-dy/2,N)                       # [-]. Control point locations on mid-panel 
-theta = np.arccos(-2*y/b)                                   # [-]. Coordinate transformation 
+N = 1000                                                     # [-]. Number of spanwise wing stations. 
+K = 100                                                       # [-]. Number of Fourier modes used. N>K for a solvable system
+alpha_fly = 2                                                # [deg]. Geometric angle of attack. 
+dy = b/N                                                     # [m]. Width of panels 
+y = np.linspace(-b/2+dy/2,b/2-dy/2,N)                        # [-]. Control point locations on mid-panel 
+theta = np.arccos(-2*y/b)                                    # [-]. Coordinate transformation 
 
 # Defining and computing the axial velocity induced by the propeller. 
 def v_axial_propeller(V_0,T,rho,S_p):
     v_a = 0.5*(-V_0 + np.sqrt(V_0**2 + 2*T/(rho*S_p))) #Equation A.29 PhD Veldhuis
     return v_a 
 
+v_a_cruise = v_axial_propeller(V_cruise,T_cruise,rho_cruise,S_p)
+v_a_stall = v_axial_propeller(V_stall,T_VTOL,rho_stall,S_p)
+v_a_VTOL = v_axial_propeller(V_VTOL,T_VTOL,rho_VTOL,S_p)
+
 # Defining and computing the radial/swirl velocity induced by the propellers
 def v_swirl_propeller(V_0,v_a,omega,R_p):
     v_swirl = (2*V_0*v_a)/(omega*R_p) #Ferarri 1957
     return v_swirl 
 
-V_a_cruise = v_axial_propeller(V_cruise,T_cruise,rho_cruise,S_p)
-V_swirl_cruise = v_swirl_propeller(V_cruise,V_a_cruise,omega_cruise,R_p)
+v_swirl_cruise = v_swirl_propeller(V_cruise,v_a_cruise,omega_cruise,R_p)
+v_swirl_stall = v_swirl_propeller(V_stall,v_a_stall,omega_VTOL,R_p)
+v_swirl_VTOL = v_swirl_propeller(V_VTOL,v_a_cruise,omega_cruise,R_p)
 
 # Creating a matrix of induced propeller velocities according to the propeller placements along the span. 
-inducedVelocity = np.zeros((N,3))
-
-# Propeller positions. Engines are placed symmetrically (laterally) at (b/2) 0.35 and (b/2)*0.7
-y_inner = 0.35
-y_outer = 0.7
-
-y_lim_inner_Pinner = b/2 * y_inner - R_p
-y_lim_outer_Pinner = b/2 * y_inner + R_p 
-y_lim_inner_Pouter = b/2 * y_outer - R_p 
-y_lim_outer_Pouter = b/2 * y_outer + R_p 
-
-for i in range(N): 
-    if -y_lim_outer_Pouter <= y[i] <= - y_lim_inner_Pouter:
-        inducedVelocity[i,0] = V_a_cruise
-        inducedVelocity[i,2] = V_swirl_cruise
-    elif -y_lim_outer_Pinner <= y[i] <= -y_lim_inner_Pinner:
-        inducedVelocity[i,0] = V_a_cruise
-        inducedVelocity[i,2] = V_swirl_cruise
-    elif y_lim_inner_Pinner <= y[i] <= y_lim_outer_Pinner:
-        inducedVelocity[i,0] = V_a_cruise
-        inducedVelocity[i,2] = V_swirl_cruise
-    elif y_lim_inner_Pouter <= y[i] <= y_lim_outer_Pouter:
-        inducedVelocity[i,0] = V_a_cruise
-        inducedVelocity[i,2] = V_swirl_cruise
-        
-if PROPELLERS == True: 
-    inducedVelocity = inducedVelocity
-else: 
-    inducedVelocity = np.zeros((N,3))
+""" INCOMPLETE """
+inducedVelocity = np.zeros((N,3)) 
 
 # =============================================================================
 # Prandtl's Adapted lifting line model with induced propeller velocities. Computing the circulation and induced lift distribution 
-
-# Finding airfoil's clalpha and alpha 0 lift. 
-reynolds_data_transposed = np.genfromtxt("reynoldsdistribution.txt")
-reynolds_data = np.transpose(reynolds_data_transposed)
-Re_min = min(reynolds_data[1])
-Re_max = max(reynolds_data[1])
-airfoil_data_transposed = np.genfromtxt("cal4014lcla.txt")
-airfoil_data = np.transpose(airfoil_data_transposed)
-airfoil_alpha = airfoil_data[0][0:25]
-airfoil_cl = airfoil_data[1][0:25]
-plt.plot(airfoil_alpha,airfoil_cl)
-x = sm.add_constant(airfoil_alpha)
-results = sm.OLS(airfoil_cl,x).fit()
-clalpha = np.rad2deg(0.1154)
-
-alpha_asfunctionof_cl = interp1d(airfoil_cl,airfoil_alpha)
-alpha_l0 = np.deg2rad(float(alpha_asfunctionof_cl(0)))
 
 # Linear twist distribution
 twist_distribution_function = interp1d([-b/2,0,b/2],[twist,0,twist])
@@ -178,7 +148,29 @@ for i in range(N):
 # Generating the solution vector (b_vector)
 B = np.zeros((N,1))
 for i in range(N):
-    B[i,0] = (clalpha*chord_distribution[i]/(4*b))*(V_cruise/V_norm[i][0])*((alpha_geo[i] - alpha_l0 - twist_distribution[i])+V_tot[i][2]/V_norm[i][0])*np.sin(theta[i])
+    B[i,0] = (clalpha*chord_distribution[i]/(4*b))*(V_cruise/V_norm[i][0])*((alpha_geo[i] - alpha_l0)-V_tot[i][2]/V_norm[i][0])*np.sin(theta[i])
+
+def alpha(V_tot):
+    """
+    This function computes the local angle of attack based on a velocity vector 
+    Input: 
+        - V_tot (Velocity vector along the span)
+    Output: 
+        - Alpha (Array along the span)
+    """ 
+    u_ai = [1,0,0] # Chord wise unit vector at control point
+    u_ni = [0,0,1] # Normal unit vector at control point
+    
+    N = len(V_tot)
+    alpha = np.zeros((N,1))
+    
+    for i in range(N): 
+        alpha[i,0] = np.arctan(np.dot(V_tot[i],u_ni)/np.dot(V_tot[i],u_ai))
+        
+
+    return alpha     
+
+alpha_P = alpha(V_tot)
 
 # Solving the system and calculating the Fourier coefficients
 A = lstsq(M,B,rcond=None)[0]
@@ -204,13 +196,13 @@ for i in range(N):
 # Post processing. Computing all aerodynamic coefficients based off the adapted LL model. 
  
 # 3D lift coefficient at this angle of attack. 
-C_L = float(A[0][0]*np.pi*AR)
+C_L = float(A[0]*np.pi*AR)
         
 # Lift induced drag coefficient at this angle of attack. 
 delta = 0
 for i in range(1,K):
-    delta = delta + (i+1)*(A[i][0]/A[0][0])**2
-C_Di = float(np.pi*AR*A[0][0]**2 *(1+delta))
+    delta = delta + (i+1)*(A[i]/A[0])**2
+C_Di = float(np.pi*AR*A[0]**2 *(1+delta))
 
 # Calculating the span efficiency factor. 
 e1 = C_L**2/(np.pi*C_Di*AR)
@@ -224,21 +216,19 @@ assert np.isclose(AR,float(AR_check),rtol=0.01), "Verification failed: Lifting l
 # =============================================================================
 # Propellers induction
 
-# =============================================================================
-# # Calculating the downwash at the wing [m/s]. 
-# downwash = np.zeros((N,1))
-# for i in range(N):
-#     downwash[i,0] = -V_norm[i][0]*alpha_induced[i][0] 
-# 
-# for i in range(N):
-#     V_tot[i][2] = downwash[i][0]
-# =============================================================================
+# Calculating the downwash at the wing [m/s]. 
+downwash = np.zeros((N,1))
+for i in range(N):
+    downwash[i,0] = -V_norm[i][0]*alpha_induced[i][0] 
+
+for i in range(N):
+    V_tot[i][2] = downwash[i][0]
     
 # Computing the Clprandtl. This is a vector containing cl values normalized to the local V so not Vinfinity. 
 clprandtl = np.zeros((N,1))
 for i in range(N): 
-    clprandtl[i,0] = 2*G[i][0] / (V_cruise * chord_distribution[i])  
-
+    clprandtl[i,0] = G[i][0] / (0.5*V_norm[i][0] * chord_distribution[i])  
+    
 # =============================================================================
 # Generating the lift distribution 
 
@@ -251,33 +241,26 @@ c_l = np.zeros((N,1))
 for i in range(N): 
     c_l[i,0] = 2*G[i][0]/(V_cruise*chord_distribution[i])
     
-# =============================================================================
-# Importing the XFLR5 LL for verification purposes. 
-data_xflr_transposed = np.genfromtxt("LLxflr5SAVEDunswept.txt")
-data_xflr = np.transpose(data_xflr_transposed)
+# XFLR5 verification lifting line 
+data_transposed_xflr = np.genfromtxt("LLxflr5.txt")
+data_xflr = np.transpose(data_transposed_xflr)
 y_xflr = data_xflr[0]
 cl_xflr = data_xflr[1]
-    
-# Plotting and formatting the data 
+
+
+# =============================================================================
 fig = plt.figure(figsize = (10,5),dpi=250)
-plt.plot(y,L, label = "Adapted LL model")
+plt.plot(y,clprandtl, label = "Adapted LL model")
 plt.scatter(y_xflr,cl_xflr, label = "XFLR5 LL model",color = "indianred")
 plt.xlabel("b [m]")
 plt.ylabel("$C_L$ [-]")
 plt.legend()
-plt.savefig("liftdistribution.png")
-
-lift_file = open("liftdistribution.txt","w")
-lift_file.close()
-
-lift_file = open("liftdistribution.txt","w")
-lines = []
-for i in range(N): 
-    lines.append(str(L[i][0])+"\n")
-    print(i,str(L[i][0]))
-lift_file.writelines(lines)
-
+plt.savefig("liftdistributionverification.png")
+plt.show()
 # =============================================================================
+
+
+
 
 
 

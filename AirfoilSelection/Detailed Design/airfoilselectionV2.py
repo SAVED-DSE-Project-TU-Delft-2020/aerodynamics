@@ -26,8 +26,11 @@ sns.set()
 def compute_reynolds(rho,V,L,mu):
     return (rho*V*L)/mu
 
-def compute_cldes(m,rho,V,Lambda):
-    return (1.1*m*9.81)/(S*0.5*rho*(V*np.cos(Lambda))**2)
+def compute_cldes(m,rho,V,Lambda,S):
+    return (1.0*m*9.81)/(S*0.5*rho*(V*np.cos(Lambda))**2)
+
+def compute_cLdes(m,rho,V,S):
+    return m*9.81/(0.5*rho*V**2 * S)
 
 def compute_dydx(x):
     return (1-0)/(max(x)-min(x))
@@ -132,7 +135,6 @@ h_cruise = 500
 p_transition,rho_transition,T_transition = compute_isa(h_transition)   
 p_cruise,rho_cruise,T_cruise = compute_isa(h_cruise)   
 mu_cruise = 17.73e-6                                                    
-mu_cruise = 17.73e-6                                                  
 mu_transition= 1.7955e-5 
 sweep = 20* np.pi / 180
 
@@ -144,7 +146,8 @@ Re_cruise = compute_reynolds(rho_cruise,V_cruise,c_mgc,mu_cruise)
 Re_transition = compute_reynolds(rho_transition,V_transition,c_mgc,mu_cruise)
 
 # Computing the design lift coefficient 
-cldes = compute_cldes(m,rho_cruise,V_cruise,sweep)
+cldes = compute_cldes(m,rho_cruise,V_cruise,sweep,S)
+CLdes = compute_cLdes(m,rho_cruise,V_cruise,S)
 NACAdigit1 = round(cldes*20/3,0)
 
 # Clear file from last run
@@ -206,7 +209,7 @@ for i in range(len(airfoils)):
     
     airfoil_results.append([airfoil[0],float(cl_cd_at_cldes),float(cmac),float(alpha_cruise),float(cl_max),float(alpha_stall),airfoil[1]])
     
-    result = "\n"+airfoil[0]+": (Cl/Cd)_max @ Cldes = "+str(round(float(cl_cd_at_cldes),1))+", Cmac = "+str(round(float(cmac),4))+", alpha_cruise = "+str(round(float(alpha_cruise),2))+", Cl_max @ transition = "+str(round(float(cl_max),2))+", alpha_stall @transition = "+str(round(float(alpha_stall),1))+" ,(t/c)_max = "+str(round(float(airfoil[1]),1))+" alpha_l=0 = "+str(round(float(alpha_at_cl0),2))
+    result = "\n"+airfoil[0]+": (Cl/Cd)_max @ Cldes = "+str(round(float(cl_cd_at_cldes),1))+", Cmac = "+str(round(float(cmac),4))+", alpha_cruise = "+str(round(float(alpha_cruise),2))+", Cl_max @ transition = "+str(round(float(cl_max),2))+", alpha_stall @transition = "+str(round(float(alpha_stall),1))+" ,(t/c)_max = "+str(round(float(airfoil[1]),1))+" alpha_l=0 = "+str(round(float(alpha_at_cl0),3))
     file_results.append(result)
     
 file.writelines(file_results)
@@ -360,7 +363,7 @@ def linear(x,a,b):
 alpha_cruise_fit = alpha_cruise[2:40]
 cl_cruise_fit = cl_cruise[2:40]
 cl_alpha, cl0 = curve_fit(linear,alpha_cruise_fit,cl_cruise_fit)
-
+cl_alpha = cl_alpha[0] *180/np.pi
 
 
 
