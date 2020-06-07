@@ -155,7 +155,7 @@ file = open("airfoilanalysisresultsdetailed.txt","w")
 
 # Creating a selection of airfoils to be analysed. 
 airfoils = [] 
-low_speed = [["ag12",6.24],["ag16",7.11],["ag24",8.41],["ag35",8.72],["cal1215j",11.72],["cal2263m",11.72],["cal4014l",10],["e231",12.33],["e374",10.91],["e387",9.07],["rg15",8.92],["s7012",8.75],["s8064",12.33],["s9000",9.01],["sa7035",9.19],["sa7036",9.20],["sd7037",9.20],["sd7080",9.15]]
+low_speed = [["ag12",6.24],["ag16",7.11],["ag24",8.41],["ag35",8.72],["cal1215j",11.72],["cal2263m",11.72],["cal4014l",10],["e231",12.33],["e374",10.91],["e387",9.07],["rg15",8.92],["s7012",8.75],["s8064",12.33],["s9000",9.01],["sa7035",9.19],["sa7036",9.20],["sd7037",9.20],["sd7080",9.15],["mh45",9.85],["mh44",9.66],["mh60",10.08],["s5010",9.8],["mh62",9.3],["mh61",10.26],["e221",9.39]]
 naca = [["22106",6],["23106",6],["24106",6],["25106",6],["22108",8],["23108",8],["24108",8],["25108",8],["22110",10],["23110",10],["24110",10],["25110",10],["22112",12],["23112",12],["24112",12],["25112",12],["22114",14],["23114",14],["24114",14],["25114",14],["22116",16],["23116",16],["24116",16],["25116",16]]
 for i in range(len(naca)):
     airfoils.append(naca[i])
@@ -321,10 +321,12 @@ stall_data = np.transpose(stall_data_transposed)
 alpha_cruise = cruise_data[0][8:]
 cl_cruise = cruise_data[1][8:]
 cd_cruise = cruise_data[2][8:]
+cm_cruise = cruise_data[3][8:]
 
 alpha_stall = stall_data[0][8:]
 cl_stall = stall_data[1][8:]
 cd_stall = stall_data[2][8:]
+cm_stall = stall_data[3][8:]
 
 liftdragpolar = plt.figure(figsize = (10,5),dpi = 250)
 plt.scatter(cd_cruise,cl_cruise, label = "Re = 860000",color = "blue",marker = "^")
@@ -337,19 +339,30 @@ plt.legend()
 plt.savefig("liftdragpolar.png")
 
 liftcurve = plt.figure(figsize = (10,5),dpi = 250)
-plt.scatter(alpha_cruise,cl_cruise, label = "Re = 860000",color = "blue",marker = "^")
+plt.scatter(alpha_cruise,cl_cruise, label = "Re = 860000 [-]",color = "blue",marker = "^")
 plt.plot(alpha_cruise,cl_cruise,color = "blue")
-plt.scatter(alpha_stall,cl_stall, label = "Re = 450000",color = "red")
+plt.scatter(alpha_stall,cl_stall, label = "Re = 450000 [-]",color = "red")
 plt.plot(alpha_stall,cl_stall,color = "red")
-plt.xlabel(r"$\alpha$  [-]")
+plt.xlabel(r"$\alpha$  [$^\circ$]")
 plt.ylabel("$C_l$ [-]")
 plt.legend()
 plt.savefig("liftcurve.png")
 
+
+momentcurve = plt.figure(figsize = (10,5),dpi = 250)
+plt.scatter(alpha_cruise,cm_cruise, label = "Re = 860000 [-]",color = "blue",marker = "^")
+plt.plot(alpha_cruise,cm_cruise,color = "blue")
+plt.scatter(alpha_stall,cm_stall, label = "Re = 450000 [-]",color = "red")
+plt.plot(alpha_stall,cm_stall,color = "red")
+plt.ylim(-0.1,0.2)
+plt.xlabel(r"$\alpha$  [$^\circ$]")
+plt.ylabel("$C_m0.25c$ [-]")
+plt.legend()
+plt.savefig("momentcurve.png")
+
 # =============================================================================
 # END
 print("Airfoil selection finished, see results file in directory")
-
 
 
 

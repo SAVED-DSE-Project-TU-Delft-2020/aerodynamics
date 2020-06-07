@@ -41,3 +41,10 @@ sa7035: (Cl/Cd)_max @ Cldes = 63.6, Cmac = -0.056, alpha_cruise = 0.32, Cl_max @
 sa7036: (Cl/Cd)_max @ Cldes = 65.8, Cmac = -0.062, alpha_cruise = 0.06, Cl_max @ transition = 1.24, alpha_stall @transition = 9.5 ,(t/c)_max = 9.2
 sd7037: (Cl/Cd)_max @ Cldes = 66.8, Cmac = -0.0703, alpha_cruise = -0.28, Cl_max @ transition = 1.32, alpha_stall @transition = 10.4 ,(t/c)_max = 9.2
 sd7080: (Cl/Cd)_max @ Cldes = 67.1, Cmac = -0.058, alpha_cruise = 0.28, Cl_max @ transition = 1.23, alpha_stall @transition = 10.0 ,(t/c)_max = 9.2
+mh45: (Cl/Cd)_max @ Cldes = 83.6, Cmac = 0.007, alpha_cruise = 2.62, Cl_max @ transition = 1.15, alpha_stall @transition = 9.9 ,(t/c)_max = 9.8
+mh44: (Cl/Cd)_max @ Cldes = 75.5, Cmac = 0.003, alpha_cruise = 2.6, Cl_max @ transition = 1.0, alpha_stall @transition = 9.9 ,(t/c)_max = 9.7
+mh60: (Cl/Cd)_max @ Cldes = 83.9, Cmac = 0.006, alpha_cruise = 2.56, Cl_max @ transition = 1.11, alpha_stall @transition = 9.4 ,(t/c)_max = 10.1
+s5010: (Cl/Cd)_max @ Cldes = 68.9, Cmac = 0.008, alpha_cruise = 2.41, Cl_max @ transition = 1.13, alpha_stall @transition = 11.6 ,(t/c)_max = 9.8
+mh62: (Cl/Cd)_max @ Cldes = 86.8, Cmac = 0.001, alpha_cruise = 2.49, Cl_max @ transition = 1.03, alpha_stall @transition = 8.4 ,(t/c)_max = 9.3
+mh61: (Cl/Cd)_max @ Cldes = 86.8, Cmac = 0.017, alpha_cruise = 3.11, Cl_max @ transition = 0.84, alpha_stall @transition = 7.3 ,(t/c)_max = 10.3
+e221: (Cl/Cd)_max @ Cldes = 65.5, Cmac = 0.0, alpha_cruise = 2.36, Cl_max @ transition = 1.05, alpha_stall @transition = 10.4 ,(t/c)_max = 9.4
