@@ -30,6 +30,7 @@ a,b = curve_fit(linear,alpha_14,CL_14)[0]
 
 data_28 = np.loadtxt("ConceptA_D_T1-28_0 m_s-LLT.txt",skiprows=1)
 
+Cm_28 = data_28[:,8]
 alpha_28 = data_28[:,0]
 CL_28 = data_28[:,2]
 CD_28 = data_28[:,5]
@@ -69,9 +70,10 @@ CDi_28 = data_28[:,3]
 
 
 coeff_28 = curve_fit(polarf,CL_28,CD_28)[0]
+Cm_28 = data_28[:,8]
 
 
-CD0_28 = coeff_28[1]
+CD0_28 = coeff_28[1]    
 e_28 = CL_28**2/(np.pi*AR*CDi_28)
 
 CD_28 += 0.002588
