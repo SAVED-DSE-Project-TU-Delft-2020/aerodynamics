@@ -1,12 +1,17 @@
 # -*- coding: utf-8 -*-
 """
-Created on Tue Jun  2 19:36:57 2020
+Created on Sun Jun  7 17:50:06 2020
 
 @author: Casper
 """
+
+import statsmodels.api as sm 
 import numpy as np 
 
-a = np.array([[1],[1],[1]])
-b = np.array([[2],[2],[2]])
 
-assert np.allclose(a,b,rtol = 0.0001)
+x = np.array([1,2,3,4,5]) 
+y = x/2 
+
+x1 = sm.add_constant(x)
+
+results = sm.OLS(y,x1).fit()
