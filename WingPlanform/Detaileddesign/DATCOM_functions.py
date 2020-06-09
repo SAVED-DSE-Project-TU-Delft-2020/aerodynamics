@@ -162,9 +162,9 @@ def compute_CNaa_ref(CN_prime,CLalpha,aoa_stall):
     '''
     return (CN_prime - CLalpha*0.5*np.sin(2*np.pi*aoa_stall/180))/(np.sin(np.pi*aoa_stall/180)*np.abs(np.sin(np.pi*aoa_stall/180)))
 
-# def compute_aoa_camber(aoa,aoa_0,aoa_stall):
+def compute_aoa_camber(aoa,aoa_0,aoa_stall):
     
-#     return aoa*(1+aoa_0/(90-aoa_stall)) - 90*aoa_0/(90-aoa_stall)
+    return aoa*(1+aoa_0/(90-aoa_stall)) - 90*aoa_0/(90-aoa_stall)
 
 def compute_CNaa_below(CNaa_ref,delta_CNaa):
     '''
@@ -211,13 +211,12 @@ def compute_CD0_wing(Cf,tc_avg,x_tcmax,Swet,Sref,Rls):
 
 #===========CD0 of the body===================================================
 
-def compute_CD0_body(Cf,lb,Ss_Sb,Sb):
+def compute_CD0_body(Cf,lb,Ss_Sb,Sb,d):
     '''
     Formula from p.879
     Cf from Figure 4.1.5.1-26/27 p.687-688
     Ss_Sb from Figure 2.3-2 and 2.3-3 p.179-180
     '''
-    d = np.sqrt(Sb/0.7854)
     
     return Cf*(1+60/(lb/d)**3 + 0.0025*lb/d)*Ss_Sb
 
@@ -277,3 +276,18 @@ def compute_CD_ind_wing(CLalpha,AR,clalpha,v,w,theta,R,CL):
 
 def compute_CD(CD0,CDi):
     return CD0 + CDi
+
+
+def compute_Cf(M,Re,taper,cr):
+    A = 1/(1+0.2*M**2)**0.467
+    B = 0.472/(np.log10(Re*cr*0.5*(1+taper)))**2.58
+    C = 1-(1-taper)**4*(4.55-0.27*np.log10(Re)*cr)/100
+    return A*B*C
+
+def compute_Cf_b(M,Re,lb):
+    A = 1/(1+0.2*M**2)**0.467
+    B = 0.472/(np.log10(Re*lb)**2.58)
+    return A*B
+
+def compute_Rls(M,QC_sw):
+    return 1.07 + 8*(M-0.25)/35 - 0.972*(1-np.cos(QC_sw*np.pi/180))**1.848

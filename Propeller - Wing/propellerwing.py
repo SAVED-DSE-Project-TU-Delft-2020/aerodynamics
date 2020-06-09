@@ -27,7 +27,7 @@ Switch the propellers on or off:
     PROPELLERS = False: Propellers are turned off
 """
 
-PROPELLERS = False   
+PROPELLERS = True   
 
 """ 
 Angle of attack [deg] the aircraft is flying at for each of the load cases. 
@@ -46,7 +46,7 @@ Note:
     - The verification lifting line will always have XFLR5's scatter turned on. 
     - XFLR5 does not include the propeller-wing interaction. 
 """ 
-XFLR5 = True 
+XFLR5 = False 
 
 # =============================================================================
 # Importing relevant modules 
@@ -137,22 +137,17 @@ def v_axial_propeller(V_0,T,rho,S_p):
     return v_a 
 
 # Defining and computing the radial/swirl velocity induced by the propellers
-def v_swirl_propeller(V_0,v_a,omega,R_p):
+def v_swirl_propeller(V_0,v_a,omega,r):
     if omega == 0:
         v_swirl = 0
     else:
-        v_swirl = (2*V_0*v_a)/(omega*R_p) #Ferarri 1957
+        v_swirl = (2*V_0*v_a)/(omega*r) #Ferarri 1957
     return v_swirl 
 
 V_a_cruise = []
 for i in range(N_LC):
     V_a = v_axial_propeller(V_cruise[i],T_cruise[i],rho_cruise[i],S_p)
     V_a_cruise.append(V_a)
-
-V_swirl_cruise = []
-for i in range(N_LC):
-    V_swirl = v_swirl_propeller(V_cruise[i],V_a_cruise[i],omega_cruise[i],R_p)
-    V_swirl_cruise.append(V_swirl)
 
 # Creating a matrix of induced propeller velocities according to the propeller placements along the span. 
 inducedVelocity = []
@@ -164,20 +159,40 @@ for i in range(N_LC):
     y_lim_inner_Pouter = b[i]/2 * y_outer - R_p 
     y_lim_outer_Pouter = b[i]/2 * y_outer + R_p 
 
-    for j in range(N): 
+    for j in range(N):
+        # Left outboard propeller: Clockwise from behind. 
         if -y_lim_outer_Pouter <= y[i][j] <= - y_lim_inner_Pouter:
             inducedVelocity_i[j,0] = V_a_cruise[i]
-            inducedVelocity_i[j,2] = V_swirl_cruise[i]
+            if -y_lim_outer_Pouter <= y[i][j] <= -b[i]/2 * y_outer:
+                inducedVelocity_i[j,2] = v_swirl_propeller(V_cruise[i],V_a_cruise[i],omega_cruise[i],np.abs(b[i]/2 * y_outer - np.abs(y[i][j])))
+                print(inducedVelocity_i[j,2],y[i][j])
+            elif -b[i]/2*y_outer <= y[i][j] <= - y_lim_inner_Pouter:
+                inducedVelocity_i[j,2] = -v_swirl_propeller(V_cruise[i],V_a_cruise[i],omega_cruise[i],np.abs(b[i]/2 * y_outer - np.abs(y[i][j])))
+                print(inducedVelocity_i[j,2],y[i][j])
+        # Left inboard propeller: Counter clockwise from behind
         elif -y_lim_outer_Pinner <= y[i][j] <= -y_lim_inner_Pinner:
             inducedVelocity_i[j,0] = V_a_cruise[i]
-            inducedVelocity_i[j,2] = V_swirl_cruise[i]
+            if -y_lim_outer_Pinner <= y[i][j] <= -b[i]/2 * y_inner:
+                inducedVelocity_i[j,2] = -v_swirl_propeller(V_cruise[i],V_a_cruise[i],omega_cruise[i],np.abs(b[i]/2 * y_inner - np.abs(y[i][j])))
+            elif -b[i]/2 * y_inner <= y[i][j] <= -y_lim_inner_Pinner:
+                inducedVelocity_i[j,2] = v_swirl_propeller(V_cruise[i],V_a_cruise[i],omega_cruise[i],np.abs(b[i]/2 * y_inner - np.abs(y[i][j])))
+                
+        # Right inboard propeller: Counter clockwise from behind 
         elif y_lim_inner_Pinner <=  y[i][j] <= y_lim_outer_Pinner:
             inducedVelocity_i[j,0] = V_a_cruise[i]
-            inducedVelocity_i[j,2] = V_swirl_cruise[i]
+            if y_lim_inner_Pinner <=  y[i][j] <= b[i]/2 * y_inner:
+                inducedVelocity_i[j,2] = -v_swirl_propeller(V_cruise[i],V_a_cruise[i],omega_cruise[i],np.abs(b[i]/2 * y_inner - np.abs(y[i][j])))
+            elif b[i]/2 * y_inner <= y[i][j] <= y_lim_outer_Pinner:
+                inducedVelocity_i[j,2] = -v_swirl_propeller(V_cruise[i],V_a_cruise[i],omega_cruise[i],np.abs(b[i]/2 * y_inner - np.abs(y[i][j])))
+                
+        # Right outboard propeller: Clockwise from behind
         elif y_lim_inner_Pouter <=  y[i][j] <= y_lim_outer_Pouter:
             inducedVelocity_i[j,0] = V_a_cruise[i]
-            inducedVelocity_i[j,2] = V_swirl_cruise[i]
-    
+            if y_lim_inner_Pouter <=  y[i][j] <= b[i]/2 * y_outer:
+                inducedVelocity_i[j,2] = v_swirl_propeller(V_cruise[i],V_a_cruise[i],omega_cruise[i],np.abs(b[i]/2 * y_outer - np.abs(y[i][j])))
+            elif b[i]/2 * y_outer <= y[i][j] <= y_lim_outer_Pouter:
+                inducedVelocity_i[j,2] = -v_swirl_propeller(V_cruise[i],V_a_cruise[i],omega_cruise[i],np.abs(b[i]/2 * y_outer - np.abs(y[i][j])))
+                
     if PROPELLERS == False:
         inducedVelocity_i = np.zeros((N,3))
     else:

@@ -27,7 +27,7 @@ Switch the propellers on or off:
     PROPELLERS = False: Propellers are turned off
 """
 
-PROPELLERS = False   
+PROPELLERS = True   
 
 """ 
 Angle of attack [deg] the aircraft is flying at for each of the load cases. 
