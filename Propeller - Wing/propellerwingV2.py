@@ -225,7 +225,7 @@ for i in range(N_LC):
 # Calculating geometric angle of attack [rad]
 alpha_geo = [] 
 for i in range(N_LC): 
-    alpha_geo_i = np.deg2rad(alpha_fly[i] + twist_distribution[i])
+    alpha_geo_i = np.deg2rad(alpha_fly[i] - twist_distribution[i])
     alpha_geo.append(alpha_geo_i)
     
 # Linear chord distribution 
