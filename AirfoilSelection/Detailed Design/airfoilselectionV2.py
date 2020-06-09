@@ -26,8 +26,11 @@ sns.set()
 def compute_reynolds(rho,V,L,mu):
     return (rho*V*L)/mu
 
-def compute_cldes(m,rho,V,Lambda):
-    return (1.1*m*9.81)/(S*0.5*rho*(V*np.cos(Lambda))**2)
+def compute_cldes(m,rho,V,Lambda,S):
+    return (1.0*m*9.81)/(S*0.5*rho*(V*np.cos(Lambda))**2)
+
+def compute_cLdes(m,rho,V,S):
+    return m*9.81/(0.5*rho*V**2 * S)
 
 def compute_dydx(x):
     return (1-0)/(max(x)-min(x))
@@ -132,7 +135,6 @@ h_cruise = 500
 p_transition,rho_transition,T_transition = compute_isa(h_transition)   
 p_cruise,rho_cruise,T_cruise = compute_isa(h_cruise)   
 mu_cruise = 17.73e-6                                                    
-mu_cruise = 17.73e-6                                                  
 mu_transition= 1.7955e-5 
 sweep = 20* np.pi / 180
 
@@ -144,7 +146,8 @@ Re_cruise = compute_reynolds(rho_cruise,V_cruise,c_mgc,mu_cruise)
 Re_transition = compute_reynolds(rho_transition,V_transition,c_mgc,mu_cruise)
 
 # Computing the design lift coefficient 
-cldes = compute_cldes(m,rho_cruise,V_cruise,sweep)
+cldes = compute_cldes(m,rho_cruise,V_cruise,sweep,S)
+CLdes = compute_cLdes(m,rho_cruise,V_cruise,S)
 NACAdigit1 = round(cldes*20/3,0)
 
 # Clear file from last run
@@ -156,7 +159,7 @@ file = open("airfoilanalysisresultsdetailed.txt","w")
 
 # Creating a selection of airfoils to be analysed. 
 airfoils = [] 
-low_speed = [["ag12",6.24],["ag16",7.11],["ag24",8.41],["ag35",8.72],["cal1215j",11.72],["cal2263m",11.72],["cal4014l",10],["e231",12.33],["e374",10.91],["e387",9.07],["rg15",8.92],["s7012",8.75],["s8064",12.33],["s9000",9.01],["sa7035",9.19],["sa7036",9.20],["sd7037",9.20],["sd7080",9.15]]
+low_speed = [["ag12",6.24],["ag16",7.11],["ag24",8.41],["ag35",8.72],["cal1215j",11.72],["cal2263m",11.72],["cal4014l",10],["e231",12.33],["e374",10.91],["e387",9.07],["rg15",8.92],["s7012",8.75],["s8064",12.33],["s9000",9.01],["sa7035",9.19],["sa7036",9.20],["sd7037",9.20],["sd7080",9.15],["mh45",9.85],["mh44",9.66],["mh60",10.08],["s5010",9.8],["mh62",9.3],["mh61",10.26],["e221",9.39]]
 naca = [["22106",6],["23106",6],["24106",6],["25106",6],["22108",8],["23108",8],["24108",8],["25108",8],["22110",10],["23110",10],["24110",10],["25110",10],["22112",12],["23112",12],["24112",12],["25112",12],["22114",14],["23114",14],["24114",14],["25114",14],["22116",16],["23116",16],["24116",16],["25116",16]]
 for i in range(len(naca)):
     airfoils.append(naca[i])
@@ -206,7 +209,7 @@ for i in range(len(airfoils)):
     
     airfoil_results.append([airfoil[0],float(cl_cd_at_cldes),float(cmac),float(alpha_cruise),float(cl_max),float(alpha_stall),airfoil[1]])
     
-    result = "\n"+airfoil[0]+": (Cl/Cd)_max @ Cldes = "+str(round(float(cl_cd_at_cldes),1))+", Cmac = "+str(round(float(cmac),4))+", alpha_cruise = "+str(round(float(alpha_cruise),2))+", Cl_max @ transition = "+str(round(float(cl_max),2))+", alpha_stall @transition = "+str(round(float(alpha_stall),1))+" ,(t/c)_max = "+str(round(float(airfoil[1]),1))+" alpha_l=0 = "+str(round(float(alpha_at_cl0),2))
+    result = "\n"+airfoil[0]+": (Cl/Cd)_max @ Cldes = "+str(round(float(cl_cd_at_cldes),1))+", Cmac = "+str(round(float(cmac),4))+", alpha_cruise = "+str(round(float(alpha_cruise),2))+", Cl_max @ transition = "+str(round(float(cl_max),2))+", alpha_stall @transition = "+str(round(float(alpha_stall),1))+" ,(t/c)_max = "+str(round(float(airfoil[1]),1))+" alpha_l=0 = "+str(round(float(alpha_at_cl0),3))
     file_results.append(result)
     
 file.writelines(file_results)
@@ -322,10 +325,12 @@ stall_data = np.transpose(stall_data_transposed)
 alpha_cruise = cruise_data[0][8:]
 cl_cruise = cruise_data[1][8:]
 cd_cruise = cruise_data[2][8:]
+cm_cruise = cruise_data[3][8:]
 
 alpha_stall = stall_data[0][8:]
 cl_stall = stall_data[1][8:]
 cd_stall = stall_data[2][8:]
+cm_stall = stall_data[3][8:]
 
 liftdragpolar = plt.figure(figsize = (10,5),dpi = 250)
 plt.scatter(cd_cruise,cl_cruise, label = "Re = 860000",color = "blue",marker = "^")
@@ -338,14 +343,26 @@ plt.legend()
 plt.savefig("liftdragpolar.png")
 
 liftcurve = plt.figure(figsize = (10,5),dpi = 250)
-plt.scatter(alpha_cruise,cl_cruise, label = "Re = 860000",color = "blue",marker = "^")
+plt.scatter(alpha_cruise,cl_cruise, label = "Re = 860000 [-]",color = "blue",marker = "^")
 plt.plot(alpha_cruise,cl_cruise,color = "blue")
-plt.scatter(alpha_stall,cl_stall, label = "Re = 450000",color = "red")
+plt.scatter(alpha_stall,cl_stall, label = "Re = 450000 [-]",color = "red")
 plt.plot(alpha_stall,cl_stall,color = "red")
-plt.xlabel(r"$\alpha$  [-]")
+plt.xlabel(r"$\alpha$  [$^\circ$]")
 plt.ylabel("$C_l$ [-]")
 plt.legend()
 plt.savefig("liftcurve.png")
+
+
+momentcurve = plt.figure(figsize = (10,5),dpi = 250)
+plt.scatter(alpha_cruise,cm_cruise, label = "Re = 860000 [-]",color = "blue",marker = "^")
+plt.plot(alpha_cruise,cm_cruise,color = "blue")
+plt.scatter(alpha_stall,cm_stall, label = "Re = 450000 [-]",color = "red")
+plt.plot(alpha_stall,cm_stall,color = "red")
+plt.ylim(-0.1,0.2)
+plt.xlabel(r"$\alpha$  [$^\circ$]")
+plt.ylabel("$C_m0.25c$ [-]")
+plt.legend()
+plt.savefig("momentcurve.png")
 
 # =============================================================================
 # END
@@ -360,8 +377,7 @@ def linear(x,a,b):
 alpha_cruise_fit = alpha_cruise[2:40]
 cl_cruise_fit = cl_cruise[2:40]
 cl_alpha, cl0 = curve_fit(linear,alpha_cruise_fit,cl_cruise_fit)
-
-
+cl_alpha = cl_alpha[0] *180/np.pi
 
 
 
