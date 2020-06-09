@@ -14,6 +14,14 @@ from scipy.interpolate import interp1d
 import scipy.integrate as sc
 
 
+# Import data
+
+xflr = np.loadtxt("T1-28_0 m_s-VLM2.txt",skiprows=8)
+CL_xflr = xflr[:,2]
+CD_xflr = xflr[:,5]
+CD0_wing_xflr = dc.compute_linear(CL_xflr[20],CL_xflr[21],CD_xflr[20],CD_xflr[21],0)
+
+
 # ------------------------------- Parameters ------------------------------- #
 
 #===========Constant Parameters===============================================
@@ -47,9 +55,12 @@ LE_sw   = 23.1                                           # [deg]
 LE_sw_t = 39.1                                           # [deg]
 clmax   = 1.37                                           # [-]
 QC_sw   = dc.compute_sweep(LE_sw,taper,0.25,cr,b)        # [deg]
+QC_sw_t = dc.compute_sweep(LE_sw_t,taper_t,0.25,cr_t,b_t)# [deg]
 cldes   = dc.compute_cldes(MTOM,rho,V_cr,QC_sw,S)        # [-]
 clalpha = 0.11067579                                     # [deg^-1]
 cl0     = 0.0074437                                      # [-]
+Re_m    = rho*V_cr/0.0000179579                          # [m^-1]
+M_cr    = 0.084                                          # [-]
 
 #===========DATCOM Parameters=================================================
 
@@ -90,6 +101,7 @@ if cond == 'High AR':
     CN_prime_max = dc.compute_CN_prime_CLmax(CLmax,aoa_stall)        # [-]
     J = dc.compute_Jpar(C1,C2,LE_sw,AR)                              # [-]
     aoa = np.linspace(-5,aoa_stall,10000)                            # [deg]
+    # aoa_e = dc.compute_aoa_camber(aoa, aoa_0, aoa_stall)
     tan_ratio = np.tan(aoa*np.pi/180) / np.tan(aoa_stall*np.pi/180)  # [-]
     delta_CNaa = np.empty(len(aoa))                                  # [deg^-1]
     
@@ -102,28 +114,28 @@ if cond == 'High AR':
     CNaa_ref = dc.compute_CNaa_ref(CN_prime_max,CLalpha,aoa_stall)   # [-]
     CNaa_below = dc.compute_CNaa_below(CNaa_ref,delta_CNaa)          # [-]
     CN_prime = dc.compute_CN_prime(CLalpha, aoa, CNaa_below)         # [-]
-    CL_below = dc.compute_CL(CN_prime,aoa)                           # [-]
+    CL = dc.compute_CL(CN_prime,aoa)                           # [-]
     
     
     # Wing parameters to calculate zero-lift drag coefficient of the wing
-    tc_avg = 0.1       # (Estimation)                             # [-]
+    tc_avg = 0.1                  # Thickness of CAL4014L            # [-]
     x_tcmax = 0.2494                                                 # [-]
     Sref = S                                                         # [m^2]
     Swet = 2*S                                                       # [m^2]
-    Cf = 0.0046                                                      # [-]
+    Cf = dc.compute_Cf(M_cr,Re_m,taper,cr)                           # [-]
     TMAX_sw = dc.compute_sweep(LE_sw,taper,x_tcmax,cr,b)             # [-]
-    Rls = 1.06                                                       # [-]
-    CD0_wing = dc.compute_CD0_wing(Cf,tc_avg,x_tcmax,Swet,Sref,Rls)  # [-]
-    
+    Rls = dc.compute_Rls(M_cr,QC_sw)                                 # [-]
+    # CD0_wing = dc.compute_CD0_wing(Cf,tc_avg,x_tcmax,Swet,Sref,1)    # [-]
+    CD0_wing = CD0_wing_xflr
 
     # Tail parameters to calculate zero-lift drag coefficient of the tail
     NACA0009 = np.loadtxt("NACA0009.txt")                            # [-]
     tc_avg_t = 0.09                                                  # [-]
     x_tcmax_t = 0.2903                                               # [-]
     Swet_t = 2*S_t                                                   # [m^2]
-    Cf_t = 0.006                                                     # [-]
+    Cf_t = dc.compute_Cf(M_cr,Re_m,taper_t,cr_t)                     # [-]
     TMAX_sw_t = dc.compute_sweep(LE_sw_t,taper_t,x_tcmax_t,cr_t,b_t) # [-]
-    Rls_t = 1.02                                                     # [-]
+    Rls_t = dc.compute_Rls(M_cr,QC_sw_t)                             # [-]
     CD0_tail = dc.compute_CD0_tail(Cf_t,tc_avg_t,x_tcmax_t,Swet_t,Sref,Rls_t)  # [-]
     
     
@@ -131,45 +143,48 @@ if cond == 'High AR':
     lb = 0.743                                                       # [m]
     d = 0.379    # Max diameter                                      # [m]
     h = 0.167    # Max height                                        # [m]
-    Cf_b = 0.0042                                                    # [-]
-    Sb = np.pi * d * h * 0.25                                        # [m^2]
-    Ss_Sb = 12.5                                                     # [-]
-    CD0_body = dc.compute_CD0_body(Cf_b,lb,Ss_Sb,Sb)*Sb/Sref         # [-]
+    Cf_b = dc.compute_Cf_b(M_cr,Re_m,lb)                             # [-]
+    Sb = 2*((0.488-0.135)*d + (0.743-0.488)*d/2 + np.pi*0.125*d**2) # [m^2]    
+    Sb_Sref = Sb/Sref                                                # [-]
+    CD0_body = dc.compute_CD0_body(Cf_b,lb,Sb_Sref,Sb,h)             # [-]
     
     # Total zero-lift drag coefficient
-    # CD0 = CD0_wing + CD0_tail + CD0_body                             # [-]
-    CD0 = 0.01
+    CD0 = CD0_wing + CD0_tail + CD0_body                             # [-]
 
     # Lift induced drag and Oswald efficiency factor
     R = 0.94
     if twist == False:
-        CDi_wing,e = dc.compute_CD_ind_wing(CLalpha,AR,clalpha,0,0,0,R,CL_below) # [-]
+        CDi_wing,e = dc.compute_CD_ind_wing(CLalpha,AR,clalpha,0,0,0,R,CL) # [-]
             
     else:
-        CDi_wing,e = dc.compute_CD_ind_wing(CLalpha,AR,clalpha,0.000625,0.0019,theta,R,CL_below) # [-]
+        CDi_wing,e = dc.compute_CD_ind_wing(CLalpha,AR,clalpha,0.000625,0.0019,theta,R,CL) # [-]
     
     # Total drag
     CD = dc.compute_CD(CD0,CDi_wing)                                 # [-]
     
     # Updated cruise speed
-    V_cr_update = np.sqrt(MTOW*2/(rho*S*CL_below[np.argmax(CL_below/CD)])) # [m/s]
+    V_cr_update = np.sqrt(MTOW*2/(rho*S*CL[np.argmax(CL/CD)])) # [m/s]
     
     
     
 print("CD0 =", CD0)
-print("Max. L/D =",np.max(CL_below/CD))
-print("Cruise AoA =", aoa[np.argmax(CL_below/CD)])
+print("Max. L/D =",np.max(CL/CD))
+print("Cruise AoA =", aoa[np.argmax(CL/CD)])
 print("Oswald efficiency factor e =", e)
 print("Max CL =", CLmax)
 print("Lift-slope CLalpha =",CLalpha)
 print("Updated cruise speed =",V_cr_update)
+print("Cruise CL =", CL[np.argmax(CL/CD)])
+print("Climb CD =", CD[np.argmax(CL)])
 
-
+V = np.sqrt(MTOW*2/(rho*S*CL[CL>0]))
 
 # --------------------------- Extra Computations --------------------------- #
 
 data = np.loadtxt("CAL4014L.dat")
 
-
+# Cf = dc.compute_Cf(0.084,rho*V_cr/0.0000179579,taper,cr)
+# Cf_b = dc.compute_Cf_b(0.084,rho*V_cr/0.0000179579,lb)
+# Rls = dc.compute_Rls(0.084, QC_sw)
 # https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=&cad=rja&uact=8&ved=2ahUKEwiFvvr06-rpAhWPzKQKHSQyAJQQFjABegQIAhAB&url=https%3A%2F%2Fwww.mdpi.com%2F2076-3417%2F9%2F15%2F3043%2Fpdf&usg=AOvVaw1BMA1rrBr4OXRl5WVuMs9s
 # dc.compute_CD0_wing(test_cf,0.098,0.276,2*1.07,1.07,1.06)
