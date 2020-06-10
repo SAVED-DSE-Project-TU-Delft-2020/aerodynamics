@@ -1,10 +1,10 @@
 FINAL AIRFOIL SELECTION RESULTS
 
 cal4014l
-Cl/Cd @ Cldes = 163.6
+Cl/Cd @ Cldes = 144.9
 Cmac = 0.018
-Alpha cruise = 2.98
+Alpha cruise = 2.512
 Cl_max @ Re_transition = 1.4
 Alpha stall @ Re_transition = 14.0
 (t/c)_max = 10
-The most critical criterion is Cl/Cd @ Cldes. This criterion should be changed by 58.84141850168042% to swap the ranking of 24116 and cal4014l
+The most critical criterion is Cl/Cd @ Cldes. This criterion should be changed by 58.76308724803786% to swap the ranking of 24116 and cal4014l

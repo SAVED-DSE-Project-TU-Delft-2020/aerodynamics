@@ -352,7 +352,6 @@ plt.ylabel("$C_l$ [-]")
 plt.legend()
 plt.savefig("liftcurve.png")
 
-
 momentcurve = plt.figure(figsize = (10,5),dpi = 250)
 plt.scatter(alpha_cruise,cm_cruise, label = "Re = 860000 [-]",color = "blue",marker = "^")
 plt.plot(alpha_cruise,cm_cruise,color = "blue")

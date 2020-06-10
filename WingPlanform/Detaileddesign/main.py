@@ -166,6 +166,12 @@ if cond == 'High AR':
     V_cr_update = np.sqrt(MTOW*2/(rho*S*CL[np.argmax(CL/CD)])) # [m/s]
     
     
+    # Creating interpolating function in order to be able to call values. 
+    CLdes = CL[np.argmax(CL/CD)]
+    CD_asfunctionof_CL = interp1d(CL,CD)
+    CDdes = CD_asfunctionof_CL(CLdes)
+    
+    
     
 print("CD0 =", CD0)
 print("Max. L/D =",np.max(CL/CD))
@@ -174,7 +180,8 @@ print("Oswald efficiency factor e =", e)
 print("Max CL =", CLmax)
 print("Lift-slope CLalpha =",CLalpha)
 print("Updated cruise speed =",V_cr_update)
-print("Cruise CL =", CL[np.argmax(CL/CD)])
+print("Cruise CL =", CLdes)
+print("Cruise CD =",CDdes)
 print("Climb CD =", CD[np.argmax(CL)])
 
 V = np.sqrt(MTOW*2/(rho*S*CL[CL>0]))
