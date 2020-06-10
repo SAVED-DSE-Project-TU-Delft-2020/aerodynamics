@@ -34,7 +34,7 @@ Angle of attack [deg] the aircraft is flying at for each of the load cases.
 V_cruise [m/s] is the cruise speed of each of the cases.  
 """ 
 alpha_fly = [5.35,0,2]
-V_cruise = [22.92,0.0001,28]                                                                                                   # [m/s]. Stall free stream velocity
+V_cruise = [22.92,0.00001,28]                                                                                                   # [m/s]. Stall free stream velocity
 
 
 """
@@ -79,8 +79,8 @@ for i in range(N_LC):
     M_cruise.append(M_i)            
 
 b = [3,3,2.5]                                                            # [m]. Wing span
-W_S = 122.23                                                             # [N/m^2]. Wing loading 
-m = 17.53                                                                # [kg]. MTOM
+W_S = 128.5                                                              # [N/m^2]. Wing loading 
+m = 17.4484                                                              # [kg]. MTOM
 S = [m*9.81/W_S,m*9.81/W_S, 1.25]                                        # [m^2]. Wing surface area 
 twist = [0,0,0]                                                          # [deg]. Wing tip twist angle (linear distribution)
 
@@ -100,14 +100,23 @@ c_tip = []                                                               # [m]. 
 for i in range(N_LC): 
     c_tip.append(c_root[i]*taper[i])
     
+CD = 0.019528716372218168                                                # [m]. Cruise drag coefficient 
 # =============================================================================
 # Propeller actuator disk model.
-D_p = 0.3                                                               # [m]. Propeller disk diameter 
+D_p = 15.5*0.0254                                                       # [m]. Propeller disk diameter 
 R_p = D_p/2                                                             # [m]. Propeller disk radius 
 S_p = np.pi*R_p**2                                                      # [m^2]. Propeller disk area 
-T_cruise = [20,20,0]                                                    # [N]. Single propeller thrust during cruise 
 N_p = 4                                                                 # [-]. Number of propellers                                                  
-omega_cruise = [3,3,0]                                                  # [rad/s]. Propeller angular velocity during cruise            
+
+T_cruise = [0.5*rho_cruise[0]*V_cruise[0]**2 * S[0]*CD,1.2*m*9.81,0]    # [N]. Propeller thrust 
+
+# Computing the propeller angular velocity based on a linear regression between thrust and RPM.
+def omega(T):
+    omega_rpm = 106*T + 2831
+    omega_rads = 0.104719755*(omega_rpm)
+    return omega_rads
+
+omega_cruise = [omega(T_cruise[0]),omega(T_cruise[1]),omega(T_cruise[2])]                                                  # [rad/s]. Propeller angular velocity during cruis
 
 # Wing discretization
 N = 1000                                                                # [-]. Number of spanwise wing stations. 
@@ -148,6 +157,15 @@ V_a_cruise = []
 for i in range(N_LC):
     V_a = v_axial_propeller(V_cruise[i],T_cruise[i],rho_cruise[i],S_p)
     V_a_cruise.append(V_a)
+    
+    
+def n_prop(V_a,V_cruise): 
+    Z = (V_a+V_cruise)/V_cruise
+    n = 0.5*(1-Z**2)*(1+Z)
+    return n  
+
+n_p = [n_prop(V_a_cruise[0],V_cruise[0]),n_prop(V_a_cruise[1],V_cruise[1]),n_prop(V_a_cruise[2],V_cruise[2])]
+    
 
 # Creating a matrix of induced propeller velocities according to the propeller placements along the span. 
 inducedVelocity = []
@@ -165,10 +183,8 @@ for i in range(N_LC):
             inducedVelocity_i[j,0] = V_a_cruise[i]
             if -y_lim_outer_Pouter <= y[i][j] <= -b[i]/2 * y_outer:
                 inducedVelocity_i[j,2] = v_swirl_propeller(V_cruise[i],V_a_cruise[i],omega_cruise[i],np.abs(b[i]/2 * y_outer - np.abs(y[i][j])))
-                print(inducedVelocity_i[j,2],y[i][j])
             elif -b[i]/2*y_outer <= y[i][j] <= - y_lim_inner_Pouter:
                 inducedVelocity_i[j,2] = -v_swirl_propeller(V_cruise[i],V_a_cruise[i],omega_cruise[i],np.abs(b[i]/2 * y_outer - np.abs(y[i][j])))
-                print(inducedVelocity_i[j,2],y[i][j])
         # Left inboard propeller: Counter clockwise from behind
         elif -y_lim_outer_Pinner <= y[i][j] <= -y_lim_inner_Pinner:
             inducedVelocity_i[j,0] = V_a_cruise[i]
@@ -181,7 +197,7 @@ for i in range(N_LC):
         elif y_lim_inner_Pinner <=  y[i][j] <= y_lim_outer_Pinner:
             inducedVelocity_i[j,0] = V_a_cruise[i]
             if y_lim_inner_Pinner <=  y[i][j] <= b[i]/2 * y_inner:
-                inducedVelocity_i[j,2] = -v_swirl_propeller(V_cruise[i],V_a_cruise[i],omega_cruise[i],np.abs(b[i]/2 * y_inner - np.abs(y[i][j])))
+                inducedVelocity_i[j,2] = v_swirl_propeller(V_cruise[i],V_a_cruise[i],omega_cruise[i],np.abs(b[i]/2 * y_inner - np.abs(y[i][j])))
             elif b[i]/2 * y_inner <= y[i][j] <= y_lim_outer_Pinner:
                 inducedVelocity_i[j,2] = -v_swirl_propeller(V_cruise[i],V_a_cruise[i],omega_cruise[i],np.abs(b[i]/2 * y_inner - np.abs(y[i][j])))
                 
@@ -189,9 +205,9 @@ for i in range(N_LC):
         elif y_lim_inner_Pouter <=  y[i][j] <= y_lim_outer_Pouter:
             inducedVelocity_i[j,0] = V_a_cruise[i]
             if y_lim_inner_Pouter <=  y[i][j] <= b[i]/2 * y_outer:
-                inducedVelocity_i[j,2] = v_swirl_propeller(V_cruise[i],V_a_cruise[i],omega_cruise[i],np.abs(b[i]/2 * y_outer - np.abs(y[i][j])))
-            elif b[i]/2 * y_outer <= y[i][j] <= y_lim_outer_Pouter:
                 inducedVelocity_i[j,2] = -v_swirl_propeller(V_cruise[i],V_a_cruise[i],omega_cruise[i],np.abs(b[i]/2 * y_outer - np.abs(y[i][j])))
+            elif b[i]/2 * y_outer <= y[i][j] <= y_lim_outer_Pouter:
+                inducedVelocity_i[j,2] = v_swirl_propeller(V_cruise[i],V_a_cruise[i],omega_cruise[i],np.abs(b[i]/2 * y_outer - np.abs(y[i][j])))
                 
     if PROPELLERS == False:
         inducedVelocity_i = np.zeros((N,3))
