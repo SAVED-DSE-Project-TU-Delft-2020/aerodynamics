@@ -27,14 +27,14 @@ Switch the propellers on or off:
     PROPELLERS = False: Propellers are turned off
 """
 
-PROPELLERS = True   
+PROPELLERS = False   
 
 """ 
 Angle of attack [deg] the aircraft is flying at for each of the load cases. 
 V_cruise [m/s] is the cruise speed of each of the cases.  
 """ 
 alpha_fly = [5.35,0,2]
-V_cruise = [22.92,0.00001,28]                                                                                                   # [m/s]. Stall free stream velocity
+V_cruise = [22.92,0.001,28]                                                                                                   # [m/s]. Stall free stream velocity
 
 
 """
@@ -46,7 +46,7 @@ Note:
     - The verification lifting line will always have XFLR5's scatter turned on. 
     - XFLR5 does not include the propeller-wing interaction. 
 """ 
-XFLR5 = False 
+XFLR5 = True  
 
 # =============================================================================
 # Importing relevant modules 
@@ -76,8 +76,9 @@ M_cruise = []                                                            # [-]. 
 
 for i in range(N_LC): 
     M_i = V_cruise[i]/np.sqrt(1.4*287*Temp_cruise[i])
-    M_cruise.append(M_i)            
-
+    M_cruise.append(M_i)
+            
+sweep = np.deg2rad(np.array([0,0,20]))                                   # [rad]. Main wing sweep
 b = [3,3,2.5]                                                            # [m]. Wing span
 W_S = 128.5                                                              # [N/m^2]. Wing loading 
 m = 17.4484                                                              # [kg]. MTOM
@@ -160,9 +161,7 @@ for i in range(N_LC):
     
     
 def n_prop(V_a,V_cruise): 
-    Z = (V_a+V_cruise)/V_cruise
-    n = 0.5*(1-Z**2)*(1+Z)
-    return n  
+    return  V_cruise/(V_cruise+V_a)
 
 n_p = [n_prop(V_a_cruise[0],V_cruise[0]),n_prop(V_a_cruise[1],V_cruise[1]),n_prop(V_a_cruise[2],V_cruise[2])]
     
@@ -381,7 +380,7 @@ for i in range(N_LC):
     ai_xflr = np.deg2rad(ai_xflr)
     
     # Plotting the data. 
-    fig = plt.figure(figsize = (10,5),dpi=250)
+    fig = plt.figure(dpi=250)
     plt.plot(y[i],clprandtl, label = "Adapted LL model")
     if XFLR5 == True: 
         plt.scatter(y_xflr_cl,cl_xflr, label = "XFLR5 LL model",color = "indianred")
@@ -390,12 +389,12 @@ for i in range(N_LC):
     plt.legend()
     plt.savefig(filenames_cl_distribution[i])
     
-    fig2 = plt.figure(figsize = (10,5),dpi =250)
+    fig2 = plt.figure(dpi =250)
     plt.plot(y[i],-alpha_induced,label = "Adapted LL model")
     if XFLR5 == True: 
         plt.scatter(y_xflr_ai,ai_xflr,label = "XFLR5 LL model",color = "indianred")
     plt.xlabel("b [m]")
-    plt.ylabel(r"$\alpha_i$")
+    plt.ylabel(r"$\alpha_i$ [$\degree$]")
     plt.legend()
     plt.savefig(filenames_ai_distribution[i])
 
@@ -412,6 +411,7 @@ for i in range(N_LC):
 # =============================================================================
 # END
 print("Propeller-wing interaction finished. See all created files in corresponding directory")
+
 
 
 
