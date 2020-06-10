@@ -32,7 +32,7 @@ twist   = False                                          # [-]
 
 #===========Varying Parameters================================================
 
-rho     = isa.compute_isa(h)[1]                          # [kg/m^3]
+p,rho,T_cr     = isa.compute_isa(h)
 MTOM    = 17.536                                         # [kg]
 MTOW    = MTOM * g                                       # [N]
 taper   = 0.35   # CHANGE                                        # [-]
@@ -60,7 +60,7 @@ cldes   = dc.compute_cldes(MTOM,rho,V_cr,QC_sw,S)        # [-]
 clalpha = 0.11067579                                     # [deg^-1]
 cl0     = 0.0074437                                      # [-]
 Re_m    = rho*V_cr/0.0000179579                          # [m^-1]
-M_cr    = 0.084    # CHANGE                                      # [-]
+M_cr    = V_cr/np.sqrt(T_cr*1.4*278)    # CHANGE                                      # [-]
 
 #===========DATCOM Parameters=================================================
 
