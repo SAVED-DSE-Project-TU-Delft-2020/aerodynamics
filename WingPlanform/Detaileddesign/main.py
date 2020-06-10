@@ -35,24 +35,24 @@ twist   = False                                          # [-]
 rho     = isa.compute_isa(h)[1]                          # [kg/m^3]
 MTOM    = 17.536                                         # [kg]
 MTOW    = MTOM * g                                       # [N]
-taper   = 0.35                                           # [-]
-cr      = 0.696                                          # [m]
+taper   = 0.35   #CHANGE                                        # [-]
+cr      = 0.696   #CHANGE                                       # [m]
 ct      = cr * taper                                     # [m]
 MAC     = 2/3 * cr * (1 + taper + taper**2)/(1 + taper)  # [m]
-taper_t = 0.2                                            # [-]
-cr_t    = 0.15                                           # [m]
+taper_t = 0.2    # CHANGE                                        # [-]
+cr_t    = 0.15      # CHANGE                                     # [m]
 ct_t    = cr_t * taper_t                                 # [m]
 MAC_t   = 2/3*cr_t*(1+taper_t+taper_t**2)/(1+taper_t)    # [m]
-b       = 3                                              # [m]
+b       = 3         # CHANGE                                     # [m]
 S       = (cr + ct) * b/2                                # [m^2]
 AR      = b**2/S                                         # [-]
-b_t     = 0.882                                          # [m]
+b_t     = 0.882      # CHANGE                                    # [m]
 S_t     = (cr_t + ct_t) * b_t/2                          # [m^2]
 AR_t    = b_t**2/S_t                                     # [-]
-V_cr    = 28                                             # [m/s]
+V_cr    = 28           # CHANGE                                  # [m/s]
 V_tr    = 14                                             # [m/s]
-LE_sw   = 23.1                                           # [deg]
-LE_sw_t = 39.1                                           # [deg]
+LE_sw   = 23.1           # CHANGE                                # [deg]
+LE_sw_t = 39.1       # CHANGE                                    # [deg]
 clmax   = 1.37                                           # [-]
 QC_sw   = dc.compute_sweep(LE_sw,taper,0.25,cr,b)        # [deg]
 QC_sw_t = dc.compute_sweep(LE_sw_t,taper_t,0.25,cr_t,b_t)# [deg]
@@ -60,12 +60,12 @@ cldes   = dc.compute_cldes(MTOM,rho,V_cr,QC_sw,S)        # [-]
 clalpha = 0.11067579                                     # [deg^-1]
 cl0     = 0.0074437                                      # [-]
 Re_m    = rho*V_cr/0.0000179579                          # [m^-1]
-M_cr    = 0.084                                          # [-]
+M_cr    = 0.084    # CHANGE                                      # [-]
 
 #===========DATCOM Parameters=================================================
 
 C1      = dc.compute_C1(taper)                           # [-]
-C2      = 1                                              # [-]
+C2      = 1  # CHANGE                                            # [-]
 cond    = dc.compute_ARcondition(C1, LE_sw, AR)          # [-]
 
 ###########################         HIGH AR         ###########################
@@ -89,27 +89,26 @@ if cond == 'High AR':
     
     # Maximum lift coefficient parameters    
     delta_y = 3.72     # Airfoil sharpness parameter                 # [-]
-    CL_cl = 0.83                                                     # [-]
+    CL_cl = 0.83    # CHANGE                                         # [-]
     delta_CLmax = 0                                                  # [-]
     CLmax = dc.compute_CLmax_high(CL_cl,clmax,delta_CLmax)           # [-]
     
     # Angle of attack at maximum lift
-    delta_aoa = 2.4                                                  # [deg]
+    delta_aoa = 2.4   # CHANGE                                       # [deg]
     aoa_stall = dc.compute_aoa_stall_high(CLmax,CLalpha,aoa_0,delta_aoa) # [deg]
     
     # Lift coefficients below stall
     CN_prime_max = dc.compute_CN_prime_CLmax(CLmax,aoa_stall)        # [-]
     J = dc.compute_Jpar(C1,C2,LE_sw,AR)                              # [-]
     aoa = np.linspace(-5,aoa_stall,10000)                            # [deg]
-    # aoa_e = dc.compute_aoa_camber(aoa, aoa_0, aoa_stall)
     tan_ratio = np.tan(aoa*np.pi/180) / np.tan(aoa_stall*np.pi/180)  # [-]
     delta_CNaa = np.empty(len(aoa))                                  # [deg^-1]
     
     for i in range(len(aoa)):
-        if tan_ratio[i] <= .6:
-            delta_CNaa[i] = 2.8
+        if tan_ratio[i] <= .6: # CHANGE CONDITION
+            delta_CNaa[i] = 2.8 # CHANGE VALUE
         else:
-            delta_CNaa[i] = dc.compute_linear(0.6,1,2.8,0,tan_ratio[i])
+            delta_CNaa[i] = dc.compute_linear(0.6,1,2.8,0,tan_ratio[i]) # CHANGE LINEAR
             
     CNaa_ref = dc.compute_CNaa_ref(CN_prime_max,CLalpha,aoa_stall)   # [-]
     CNaa_below = dc.compute_CNaa_below(CNaa_ref,delta_CNaa)          # [-]
@@ -152,7 +151,7 @@ if cond == 'High AR':
     CD0 = CD0_wing + CD0_tail + CD0_body                             # [-]
 
     # Lift induced drag and Oswald efficiency factor
-    R = 0.94
+    R = 0.94 # CHANGE
     if twist == False:
         CDi_wing,e = dc.compute_CD_ind_wing(CLalpha,AR,clalpha,0,0,0,R,CL) # [-]
             
@@ -166,12 +165,6 @@ if cond == 'High AR':
     V_cr_update = np.sqrt(MTOW*2/(rho*S*CL[np.argmax(CL/CD)])) # [m/s]
     
     
-    # Creating interpolating function in order to be able to call values. 
-    CLdes = CL[np.argmax(CL/CD)]
-    CD_asfunctionof_CL = interp1d(CL,CD)
-    CDdes = CD_asfunctionof_CL(CLdes)
-    
-    
     
 print("CD0 =", CD0)
 print("Max. L/D =",np.max(CL/CD))
@@ -180,8 +173,7 @@ print("Oswald efficiency factor e =", e)
 print("Max CL =", CLmax)
 print("Lift-slope CLalpha =",CLalpha)
 print("Updated cruise speed =",V_cr_update)
-print("Cruise CL =", CLdes)
-print("Cruise CD =",CDdes)
+print("Cruise CL =", CL[np.argmax(CL/CD)])
 print("Climb CD =", CD[np.argmax(CL)])
 
 V = np.sqrt(MTOW*2/(rho*S*CL[CL>0]))
