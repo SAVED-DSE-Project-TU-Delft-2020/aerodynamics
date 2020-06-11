@@ -27,14 +27,14 @@ Switch the propellers on or off:
     PROPELLERS = False: Propellers are turned off
 """
 
-PROPELLERS = False   
+PROPELLERS = True   
 
 """ 
 Angle of attack [deg] the aircraft is flying at for each of the load cases. 
 V_cruise [m/s] is the cruise speed of each of the cases.  
 """ 
 alpha_fly = [5.35,0,2]
-V_cruise = [22.92,0.001,28]                                                                                                   # [m/s]. Stall free stream velocity
+V_cruise = [22.92,2,28]                                                                                                   # [m/s]. Stall free stream velocity
 
 
 """
@@ -46,7 +46,7 @@ Note:
     - The verification lifting line will always have XFLR5's scatter turned on. 
     - XFLR5 does not include the propeller-wing interaction. 
 """ 
-XFLR5 = True  
+XFLR5 = False  
 
 # =============================================================================
 # Importing relevant modules 
@@ -121,7 +121,7 @@ omega_cruise = [omega(T_cruise[0]),omega(T_cruise[1]),omega(T_cruise[2])]       
 
 # Wing discretization
 N = 1000                                                                # [-]. Number of spanwise wing stations. 
-K = 100                                                                 # [-]. Number of Fourier modes used. N >= K for a solvable system
+K = 10                                                                 # [-]. Number of Fourier modes used. N >= K for a solvable system
 
 dy = []
 for i in range(N_LC):
@@ -287,8 +287,8 @@ for i in range(N_LC):
     # Inducing the propeller velocities onto the total velocity vector. 
     V_tot = np.zeros((N,3))
     for j in range(N): 
-        V_tot[j,0] = V_cruise[i] + inducedVelocity[0][j][0]
-        V_tot[j,2] = inducedVelocity[0][j][2] 
+        V_tot[j,0] = V_cruise[i] + inducedVelocity[i][j][0]
+        V_tot[j,2] = inducedVelocity[i][j][2] 
     
     # Creating a normalized vector for each N.
     V_norm = np.zeros((N,1))
@@ -339,19 +339,6 @@ for i in range(N_LC):
     """VERIFICIATION STEP"""
     assert np.isclose(AR[i],float(AR_check),rtol=0.01), "Verification failed: Lifting line method not correctly implemented"
     
-# =============================================================================
-# Propellers induction
-
-# =============================================================================
-# # Calculating the downwash at the wing [m/s]. 
-# downwash = np.zeros((N,1))
-# for i in range(N):
-#     downwash[i,0] = -V_norm[i][0]*alpha_induced[i][0] 
-# 
-# for i in range(N):
-#     V_tot[i][2] = downwash[i][0]
-# =============================================================================
-    
     # Computing the Clprandtl. This is a vector containing cl values normalized to the local V so not Vinfinity. 
     clprandtl = np.zeros((N,1))
     for j in range(N): 
@@ -379,11 +366,31 @@ for i in range(N_LC):
     ai_xflr = np.array(data_xflr_ai[1])
     ai_xflr = np.deg2rad(ai_xflr)
     
+    # Creating propeller plot arrays. 
+    theta_p = np.linspace(0,2*np.pi,100)
+    x_p_1 = -y_outer*b[i]/2+R_p*np.cos(theta_p)
+    x_p_2 = -y_inner*b[i]/2+R_p*np.cos(theta_p)
+    x_p_3 = y_outer*b[i]/2+R_p*np.cos(theta_p)
+    x_p_4 = y_inner*b[i]/2+R_p*np.cos(theta_p)
+    y_p = R_p*np.sin(theta_p)
+    
     # Plotting the data. 
     fig = plt.figure(dpi=250)
     plt.plot(y[i],clprandtl, label = "Adapted LL model")
     if XFLR5 == True: 
         plt.scatter(y_xflr_cl,cl_xflr, label = "XFLR5 LL model",color = "indianred")
+# =============================================================================
+#     
+#     plt.plot(x_p_1,y_p,color="black")
+#     plt.plot(x_p_2,y_p,color="black")
+#     plt.plot(x_p_3,y_p,color="black")
+#     plt.plot(x_p_4,y_p,color="black")
+#     plt.scatter(-y_outer*b[i]/2,0,color="black")
+#     plt.scatter(-y_inner*b[i]/2,0,color="black")
+#     plt.scatter(y_outer*b[i]/2,0,color="black")
+#     plt.scatter(y_inner*b[i]/2,0,color="black")
+#     plt.plot([-b[i]/2,b[i]/2],[0,0],"--",color="black")
+# =============================================================================
     plt.xlabel("b [m]")
     plt.ylabel("$C_l$ [-]")
     plt.legend()
