@@ -67,7 +67,7 @@ S_p = R_p**2 *np.pi
 N_p = 1
 J = [1.0,0.9,0.8,0.7]
 n = np.array([compute_n(J[0],V_infty,D_p),compute_n(J[1],V_infty,D_p),compute_n(J[2],V_infty,D_p),compute_n(J[3],V_infty,D_p)])
-n = n
+n = n*2*np.pi
 CT = [CT_asfunctionof_J(J[0]),CT_asfunctionof_J(J[1]),CT_asfunctionof_J(J[2]),CT_asfunctionof_J(J[3])]
 T = [compute_T(rho_infty,n[0],D_p,CT[0]),compute_T(rho_infty,n[1],D_p,CT[1]),compute_T(rho_infty,n[2],D_p,CT[2]),compute_T(rho_infty,n[3],D_p,CT[3])]
 alpha_twist = 0 
@@ -101,6 +101,8 @@ for i in range(N_J):
         if y_prop_in <= y[j] <= y_prop_out:
             inducedVelocity_i_IU[j,0] = Vaxial
             inducedVelocity_i_OU[j,0] = Vaxial
+
+           
             if y_prop_in <= y[j] <= y_prop:
                 inducedVelocity_i_IU[j,2] = v_swirl_propeller(V_infty,Vaxial,n[i],np.abs(y[i] - y_prop))
                 inducedVelocity_i_OU[j,2] = -v_swirl_propeller(V_infty,Vaxial,n[i],np.abs(y[i] - y_prop))
@@ -211,7 +213,6 @@ for i in range(len(rotation)):
     y_data = data[i]["Y/s"]
     
     if i == 0:
-        
         for j in range(0,4):
             cl_j  = []
             y_j = []
@@ -233,7 +234,6 @@ for i in range(len(rotation)):
         plt.savefig(filenames_cl_distribution[i])
     
     elif i == 1:
-        fig = plt.figure(dpi=250)
         for j in range(4,8):
             cl_j  = []
             y_j = []
@@ -252,7 +252,7 @@ for i in range(len(rotation)):
         plt.xlabel("b [m]")
         plt.ylabel("$C_l$ [-]")
         plt.legend()
-        fig.savefig(filenames_cl_distribution[i])
+        plt.savefig(filenames_cl_distribution[i])
         
 # =============================================================================
 # End 
