@@ -33,8 +33,8 @@ PROPELLERS = True
 Angle of attack [deg] the aircraft is flying at for each of the load cases. 
 V_cruise [m/s] is the cruise speed of each of the cases.  
 """ 
-alpha_fly = [5.35,0,2]
-V_cruise = [22.92,0.00001,28]                                                                                                   # [m/s]. Stall free stream velocity
+alpha_fly = [5.32,0,2]
+V_cruise = [22.5,0.0001,28]                                                                                                   # [m/s]. Stall free stream velocity
 
 
 """
@@ -46,7 +46,7 @@ Note:
     - The verification lifting line will always have XFLR5's scatter turned on. 
     - XFLR5 does not include the propeller-wing interaction. 
 """ 
-XFLR5 = False 
+XFLR5 = False  
 
 # =============================================================================
 # Importing relevant modules 
@@ -76,11 +76,12 @@ M_cruise = []                                                            # [-]. 
 
 for i in range(N_LC): 
     M_i = V_cruise[i]/np.sqrt(1.4*287*Temp_cruise[i])
-    M_cruise.append(M_i)            
-
+    M_cruise.append(M_i)
+            
+sweep = np.deg2rad(np.array([0,0,0]))                                   # [rad]. Main wing sweep
 b = [3,3,2.5]                                                            # [m]. Wing span
-W_S = 128.5                                                              # [N/m^2]. Wing loading 
-m = 17.4484                                                              # [kg]. MTOM
+W_S = 130.034                                                              # [N/m^2]. Wing loading 
+m = 17.4754                                                            # [kg]. MTOM
 S = [m*9.81/W_S,m*9.81/W_S, 1.25]                                        # [m^2]. Wing surface area 
 twist = [0,0,0]                                                          # [deg]. Wing tip twist angle (linear distribution)
 
@@ -88,7 +89,7 @@ AR = []
 for i in range(N_LC):
     AR.append(b[i]**2/S[i])
 
-taper = [0.35,0.35,1]                                                    # [-]. Wing taper ratio 
+taper = [0.4,0.4,1]                                                    # [-]. Wing taper ratio 
 t_c = [0.10,0.10,0.12]                                                   # [-]. Wing airfoil maximum thickness over chord ratio.
 
 c_root = []                                                              # [m]. Wing root chord
@@ -100,7 +101,7 @@ c_tip = []                                                               # [m]. 
 for i in range(N_LC): 
     c_tip.append(c_root[i]*taper[i])
     
-CD = 0.019528716372218168                                                # [m]. Cruise drag coefficient 
+CD = 0.019728716372218168                                                # [m]. Cruise drag coefficient 
 # =============================================================================
 # Propeller actuator disk model.
 D_p = 15.5*0.0254                                                       # [m]. Propeller disk diameter 
@@ -114,13 +115,14 @@ T_cruise = [0.5*rho_cruise[0]*V_cruise[0]**2 * S[0]*CD,1.2*m*9.81,0]    # [N]. P
 def omega(T):
     omega_rpm = 106*T + 2831
     omega_rads = 0.104719755*(omega_rpm)
+    
     return omega_rads
 
 omega_cruise = [omega(T_cruise[0]),omega(T_cruise[1]),omega(T_cruise[2])]                                                  # [rad/s]. Propeller angular velocity during cruis
 
 # Wing discretization
 N = 1000                                                                # [-]. Number of spanwise wing stations. 
-K = 100                                                                 # [-]. Number of Fourier modes used. N >= K for a solvable system
+K = 10                                                                 # [-]. Number of Fourier modes used. N >= K for a solvable system
 
 dy = []
 for i in range(N_LC):
@@ -160,9 +162,7 @@ for i in range(N_LC):
     
     
 def n_prop(V_a,V_cruise): 
-    Z = (V_a+V_cruise)/V_cruise
-    n = 0.5*(1-Z**2)*(1+Z)
-    return n  
+    return  V_cruise/(V_cruise+V_a)
 
 n_p = [n_prop(V_a_cruise[0],V_cruise[0]),n_prop(V_a_cruise[1],V_cruise[1]),n_prop(V_a_cruise[2],V_cruise[2])]
     
@@ -182,32 +182,32 @@ for i in range(N_LC):
         if -y_lim_outer_Pouter <= y[i][j] <= - y_lim_inner_Pouter:
             inducedVelocity_i[j,0] = V_a_cruise[i]
             if -y_lim_outer_Pouter <= y[i][j] <= -b[i]/2 * y_outer:
-                inducedVelocity_i[j,2] = v_swirl_propeller(V_cruise[i],V_a_cruise[i],omega_cruise[i],np.abs(b[i]/2 * y_outer - np.abs(y[i][j])))
+                inducedVelocity_i[j,2] = v_swirl_propeller(V_cruise[i],V_a_cruise[i],omega_cruise[i],np.abs(np.abs(b[i]/2) * y_outer - np.abs(y[i][j])))
             elif -b[i]/2*y_outer <= y[i][j] <= - y_lim_inner_Pouter:
-                inducedVelocity_i[j,2] = -v_swirl_propeller(V_cruise[i],V_a_cruise[i],omega_cruise[i],np.abs(b[i]/2 * y_outer - np.abs(y[i][j])))
+                inducedVelocity_i[j,2] = -v_swirl_propeller(V_cruise[i],V_a_cruise[i],omega_cruise[i],np.abs(np.abs(b[i]/2) * y_outer - np.abs(y[i][j])))
         # Left inboard propeller: Counter clockwise from behind
         elif -y_lim_outer_Pinner <= y[i][j] <= -y_lim_inner_Pinner:
             inducedVelocity_i[j,0] = V_a_cruise[i]
             if -y_lim_outer_Pinner <= y[i][j] <= -b[i]/2 * y_inner:
-                inducedVelocity_i[j,2] = -v_swirl_propeller(V_cruise[i],V_a_cruise[i],omega_cruise[i],np.abs(b[i]/2 * y_inner - np.abs(y[i][j])))
+                inducedVelocity_i[j,2] = -v_swirl_propeller(V_cruise[i],V_a_cruise[i],omega_cruise[i],np.abs(np.abs(b[i]/2) * y_inner - np.abs(y[i][j])))
             elif -b[i]/2 * y_inner <= y[i][j] <= -y_lim_inner_Pinner:
-                inducedVelocity_i[j,2] = v_swirl_propeller(V_cruise[i],V_a_cruise[i],omega_cruise[i],np.abs(b[i]/2 * y_inner - np.abs(y[i][j])))
+                inducedVelocity_i[j,2] = v_swirl_propeller(V_cruise[i],V_a_cruise[i],omega_cruise[i],np.abs(np.abs(b[i]/2) * y_inner - np.abs(y[i][j])))
                 
         # Right inboard propeller: Counter clockwise from behind 
         elif y_lim_inner_Pinner <=  y[i][j] <= y_lim_outer_Pinner:
             inducedVelocity_i[j,0] = V_a_cruise[i]
             if y_lim_inner_Pinner <=  y[i][j] <= b[i]/2 * y_inner:
-                inducedVelocity_i[j,2] = v_swirl_propeller(V_cruise[i],V_a_cruise[i],omega_cruise[i],np.abs(b[i]/2 * y_inner - np.abs(y[i][j])))
+                inducedVelocity_i[j,2] = v_swirl_propeller(V_cruise[i],V_a_cruise[i],omega_cruise[i],np.abs(np.abs(b[i]/2) * y_inner - np.abs(y[i][j])))
             elif b[i]/2 * y_inner <= y[i][j] <= y_lim_outer_Pinner:
-                inducedVelocity_i[j,2] = -v_swirl_propeller(V_cruise[i],V_a_cruise[i],omega_cruise[i],np.abs(b[i]/2 * y_inner - np.abs(y[i][j])))
+                inducedVelocity_i[j,2] = -v_swirl_propeller(V_cruise[i],V_a_cruise[i],omega_cruise[i],np.abs(np.abs(b[i]/2) * y_inner - np.abs(y[i][j])))
                 
         # Right outboard propeller: Clockwise from behind
         elif y_lim_inner_Pouter <=  y[i][j] <= y_lim_outer_Pouter:
             inducedVelocity_i[j,0] = V_a_cruise[i]
             if y_lim_inner_Pouter <=  y[i][j] <= b[i]/2 * y_outer:
-                inducedVelocity_i[j,2] = -v_swirl_propeller(V_cruise[i],V_a_cruise[i],omega_cruise[i],np.abs(b[i]/2 * y_outer - np.abs(y[i][j])))
+                inducedVelocity_i[j,2] = -v_swirl_propeller(V_cruise[i],V_a_cruise[i],omega_cruise[i],np.abs(np.abs(b[i]/2) * y_outer - np.abs(y[i][j])))
             elif b[i]/2 * y_outer <= y[i][j] <= y_lim_outer_Pouter:
-                inducedVelocity_i[j,2] = v_swirl_propeller(V_cruise[i],V_a_cruise[i],omega_cruise[i],np.abs(b[i]/2 * y_outer - np.abs(y[i][j])))
+                inducedVelocity_i[j,2] = v_swirl_propeller(V_cruise[i],V_a_cruise[i],omega_cruise[i],np.abs(np.abs(b[i]/2) * y_outer - np.abs(y[i][j])))
                 
     if PROPELLERS == False:
         inducedVelocity_i = np.zeros((N,3))
@@ -288,15 +288,15 @@ for i in range(N_LC):
     # Inducing the propeller velocities onto the total velocity vector. 
     V_tot = np.zeros((N,3))
     for j in range(N): 
-        V_tot[j,0] = V_cruise[i] + inducedVelocity[0][j][0]
-        V_tot[j,2] = inducedVelocity[0][j][2] 
+        V_tot[j,0] = V_cruise[i] + inducedVelocity[i][j][0]
+        V_tot[j,2] = inducedVelocity[i][j][2] 
     
     # Creating a normalized vector for each N.
     V_norm = np.zeros((N,1))
     for j in range(N):
         V_norm_j = np.sqrt(V_tot[j][0]**2 +V_tot[j][1]**2 + V_tot[j][2]**2)
         V_norm[j][0] = V_norm_j
-    
+
     # Generating the solution vector (b_vector)
     B = np.zeros((N,1))
     for j in range(N):
@@ -340,19 +340,6 @@ for i in range(N_LC):
     """VERIFICIATION STEP"""
     assert np.isclose(AR[i],float(AR_check),rtol=0.01), "Verification failed: Lifting line method not correctly implemented"
     
-# =============================================================================
-# Propellers induction
-
-# =============================================================================
-# # Calculating the downwash at the wing [m/s]. 
-# downwash = np.zeros((N,1))
-# for i in range(N):
-#     downwash[i,0] = -V_norm[i][0]*alpha_induced[i][0] 
-# 
-# for i in range(N):
-#     V_tot[i][2] = downwash[i][0]
-# =============================================================================
-    
     # Computing the Clprandtl. This is a vector containing cl values normalized to the local V so not Vinfinity. 
     clprandtl = np.zeros((N,1))
     for j in range(N): 
@@ -363,10 +350,7 @@ for i in range(N_LC):
     for j in range(N):
         L[j,0] = rho_cruise[i]*V_cruise[i]*G[j][0]
     
-    c_l = np.zeros((N,1))
-    for j in range(N): 
-        c_l[j,0] = 2*G[j][0]/(V_cruise[i]*chord_distribution[i][j])
-    
+  
     # Importing XFLR5's cl vs. y for verification purposes. 
     data_xflr_transposed_cl = np.genfromtxt(filenames_verification_cl[i])
     data_xflr_cl = np.transpose(data_xflr_transposed_cl)
@@ -380,24 +364,44 @@ for i in range(N_LC):
     ai_xflr = np.array(data_xflr_ai[1])
     ai_xflr = np.deg2rad(ai_xflr)
     
+    # Creating propeller plot arrays. 
+    theta_p = np.linspace(0,2*np.pi,100)
+    x_p_1 = -y_outer*b[i]/2+R_p*np.cos(theta_p)
+    x_p_2 = -y_inner*b[i]/2+R_p*np.cos(theta_p)
+    x_p_3 = y_outer*b[i]/2+R_p*np.cos(theta_p)
+    x_p_4 = y_inner*b[i]/2+R_p*np.cos(theta_p)
+    y_p = R_p*np.sin(theta_p)
+    
     # Plotting the data. 
-    fig = plt.figure(figsize = (10,5),dpi=250)
+    fig = plt.figure(dpi=250)
     plt.plot(y[i],clprandtl, label = "Adapted LL model")
     if XFLR5 == True: 
         plt.scatter(y_xflr_cl,cl_xflr, label = "XFLR5 LL model",color = "indianred")
+# =============================================================================
+#     
+#     plt.plot(x_p_1,y_p,color="black")
+#     plt.plot(x_p_2,y_p,color="black")
+#     plt.plot(x_p_3,y_p,color="black")
+#     plt.plot(x_p_4,y_p,color="black")
+#     plt.scatter(-y_outer*b[i]/2,0,color="black")
+#     plt.scatter(-y_inner*b[i]/2,0,color="black")
+#     plt.scatter(y_outer*b[i]/2,0,color="black")
+#     plt.scatter(y_inner*b[i]/2,0,color="black")
+#     plt.plot([-b[i]/2,b[i]/2],[0,0],"--",color="black")
+# =============================================================================
     plt.xlabel("b [m]")
     plt.ylabel("$C_l$ [-]")
     plt.legend()
-    plt.savefig(filenames_cl_distribution[i])
+    fig.savefig(filenames_cl_distribution[i])
     
-    fig2 = plt.figure(figsize = (10,5),dpi =250)
+    fig2 = plt.figure(dpi =250)
     plt.plot(y[i],-alpha_induced,label = "Adapted LL model")
     if XFLR5 == True: 
         plt.scatter(y_xflr_ai,ai_xflr,label = "XFLR5 LL model",color = "indianred")
     plt.xlabel("b [m]")
-    plt.ylabel(r"$\alpha_i$")
+    plt.ylabel(r"$\alpha_i$ [$\degree$]")
     plt.legend()
-    plt.savefig(filenames_ai_distribution[i])
+    fig2.savefig(filenames_ai_distribution[i])
 
     # Formatting the lift distribution for the SMM department. 
     lift_file = open(filenames_l_distribution[i],"w")
@@ -412,6 +416,7 @@ for i in range(N_LC):
 # =============================================================================
 # END
 print("Propeller-wing interaction finished. See all created files in corresponding directory")
+
 
 
 
