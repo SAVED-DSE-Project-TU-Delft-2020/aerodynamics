@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 
 # ---------------------------- General functions ---------------------------- #
 def compute_sweep(LE_sw,taper,x_c,cr,b):
-    return (np.tan(LE_sw*np.pi/180) - x_c*2*cr/b*(1-taper))*180/np.pi
+    return np.arctan((np.tan(LE_sw*np.pi/180) - x_c*2*cr/b*(1-taper)))*180/np.pi
 
 def compute_cldes(m,rho,V,QC_sw,S):
     return (m*9.81)/(S*0.5*rho*(V*np.cos(QC_sw*np.pi/180))**2)
@@ -51,9 +51,8 @@ def compute_AOA_0_lift_tw(aoa0_theta,theta,aoa_zero):
 # ---------------------------------- Lift ---------------------------------- #
 #===========High AR CLalpha===================================================
     
-def compute_CLa(AR,HC_sw):
-    
-    return 2*np.pi*AR/(2+np.sqrt((AR/0.95)**2*(1+np.tan(HC_sw*np.pi/180)**2) + 4))
+def compute_CLa(AR,HC_sw,clalpha):
+    return 2*np.pi*AR/(2+np.sqrt((2*np.pi*AR/clalpha)**2*(1+np.tan(HC_sw*np.pi/180)**2) + 4))
 
 #===========Low AR CLalpha====================================================
     

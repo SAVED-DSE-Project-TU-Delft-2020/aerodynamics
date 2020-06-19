@@ -12,14 +12,16 @@ import isacalculator as isa
 from scipy.optimize import curve_fit
 from scipy.interpolate import interp1d
 import scipy.integrate as sc
+import seaborn as sns
+
 
 
 # Import data
 
-xflr = np.loadtxt("T1-28_0 m_s-VLM2.txt",skiprows=8)
-CL_xflr = xflr[:,2]
-CD_xflr = xflr[:,5]
-CD0_wing_xflr = dc.compute_linear(CL_xflr[20],CL_xflr[21],CD_xflr[20],CD_xflr[21],0)
+xflr = np.loadtxt("CL-CD.txt",skiprows=1)
+CL_xflr = xflr[:,1]
+CD_xflr = xflr[:,0]
+CD0_wing_xflr = dc.compute_linear(CL_xflr[19],CL_xflr[20],CD_xflr[19],CD_xflr[20],0)
 
 
 # ------------------------------- Parameters ------------------------------- #
@@ -33,10 +35,10 @@ twist   = False                                          # [-]
 #===========Varying Parameters================================================
 
 p,rho,T_cr = isa.compute_isa(h)
-MTOM     = 17.536                                         # [kg]
+MTOM     = 17.475                                         # [kg]
 MTOW     = MTOM * g                                       # [N]
-taper    = 0.35                                           # [-]
-cr       = 0.696                                          # [m]
+taper    = 0.4                                            # [-]
+cr       = 0.628                                          # [m]
 ct       = cr * taper                                     # [m]
 MAC      = 2/3 * cr * (1 + taper + taper**2)/(1 + taper)  # [m]
 taper_t  = 0.2                                            # [-]
@@ -46,13 +48,13 @@ MAC_t    = 2/3*cr_t*(1+taper_t+taper_t**2)/(1+taper_t)    # [m]
 b        = 3                                              # [m]
 S        = (cr + ct) * b/2                                # [m^2]
 AR       = b**2/S                                         # [-]
-b_t      = 0.882                                          # [m]
+b_t      = 0.672                                          # [m]
 S_t      = (cr_t + ct_t) * b_t/2                          # [m^2]
 AR_t     = b_t**2/S_t                                     # [-]
-V_cr     = 28                                             # [m/s]
+V_cr     = 22.3                                           # [m/s]
 V_tr     = 14                                             # [m/s]
-LE_sw    = 23.1                                           # [deg]
-LE_sw_t  = 39.1                                           # [deg]
+LE_sw    = 19.27                                          # [deg]
+LE_sw_t  = 38.58                                          # [deg]
 clmax    = 1.37                                           # [-]
 QC_sw    = dc.compute_sweep(LE_sw,taper,0.25,cr,b)        # [deg]
 QC_sw_t  = dc.compute_sweep(LE_sw_t,taper_t,0.25,cr_t,b_t)# [deg]
@@ -65,7 +67,7 @@ M_cr     = V_cr/np.sqrt(T_cr*1.4*278)    # CHANGE                               
 #===========DATCOM Parameters=================================================
 
 C1      = dc.compute_C1(taper)                           # [-]
-C2      = 1  # CHANGE                                            # [-]
+C2      = 1.1                                            # [-]
 cond    = dc.compute_ARcondition(C1, LE_sw, AR)          # [-]
 
 ###########################         HIGH AR         ###########################
@@ -74,7 +76,7 @@ cond    = dc.compute_ARcondition(C1, LE_sw, AR)          # [-]
 if cond == 'High AR':
     
     HC_sw = dc.compute_sweep(LE_sw,taper,0.5,cr,b)                   # [deg]
-    CLalpha = dc.compute_CLa(AR,HC_sw,2*np.pi*0.95)             # [rad^-1]
+    CLalpha = dc.compute_CLa(AR,HC_sw,clalpha*180/np.pi)             # [rad^-1]
     
     if twist == False:
         aoa_des = (cldes - cl0)/clalpha                              # [deg]
@@ -89,12 +91,12 @@ if cond == 'High AR':
     
     # Maximum lift coefficient parameters    
     delta_y = 3.72     # Airfoil sharpness parameter                 # [-]
-    CL_cl = 0.83    # CHANGE                                         # [-]
+    CL_cl = 0.83                                                     # [-]
     delta_CLmax = 0                                                  # [-]
     CLmax = dc.compute_CLmax_high(CL_cl,clmax,delta_CLmax)           # [-]
     
     # Angle of attack at maximum lift
-    delta_aoa = 2.4   # CHANGE                                       # [deg]
+    delta_aoa = 2.4                                                  # [deg]
     aoa_stall = dc.compute_aoa_stall_high(CLmax,CLalpha,aoa_0,delta_aoa) # [deg]
     
     # Lift coefficients below stall
@@ -113,7 +115,7 @@ if cond == 'High AR':
     CNaa_ref = dc.compute_CNaa_ref(CN_prime_max,CLalpha,aoa_stall)   # [-]
     CNaa_below = dc.compute_CNaa_below(CNaa_ref,delta_CNaa)          # [-]
     CN_prime = dc.compute_CN_prime(CLalpha, aoa, CNaa_below)         # [-]
-    CL = dc.compute_CL(CN_prime,aoa)                           # [-]
+    CL = dc.compute_CL(CN_prime,aoa)                                 # [-]
     
     
     # Wing parameters to calculate zero-lift drag coefficient of the wing
@@ -143,7 +145,8 @@ if cond == 'High AR':
     d = 0.379    # Max diameter                                      # [m]
     h = 0.167    # Max height                                        # [m]
     Cf_b = dc.compute_Cf_b(M_cr,Re_m,lb)                             # [-]
-    Sb = 2*((0.488-0.135)*d + (0.743-0.488)*d/2 + np.pi*0.125*d**2) # [m^2]    
+    Sb = 2*((0.488-0.135)*d + (0.743-0.488)*d/2 + np.pi*0.125*d**2) # [m^2]
+    Sb = 0.4    
     Sb_Sref = Sb/Sref                                                # [-]
     CD0_body = dc.compute_CD0_body(Cf_b,lb,Sb_Sref,Sb,h)             # [-]
     
@@ -151,7 +154,7 @@ if cond == 'High AR':
     CD0 = CD0_wing + CD0_tail + CD0_body                             # [-]
 
     # Lift induced drag and Oswald efficiency factor
-    R = 0.94 # CHANGE
+    R = 0.95 
     if twist == False:
         CDi_wing,e = dc.compute_CD_ind_wing(CLalpha,AR,clalpha,0,0,0,R,CL) # [-]
             
@@ -177,6 +180,32 @@ print("Cruise CL =", CL[np.argmax(CL/CD)])
 print("Climb CD =", CD[np.argmax(CL)])
 
 V = np.sqrt(MTOW*2/(rho*S*CL[CL>0]))
+
+
+sns.set()
+fig = plt.figure(figsize = (10,5), dpi = 250)
+plt.subplots_adjust(hspace=0.4)
+plt.subplot(2,2,1)
+plt.plot(CD,CL)
+plt.grid(True)
+plt.xlabel(r'$C_{D}$ [-]')
+plt.ylabel(r'$C_{L}$ [-]')
+
+plt.subplot(2,2,3)
+plt.plot(aoa,CL/CD)
+plt.grid(True)
+plt.xlabel(r'$\alpha$ [deg]')
+plt.ylabel(r'$\frac{C_{L}}{C_{D}}$ [-]')
+
+plt.subplot(2,2,(2,4))
+plt.plot(aoa,CL)
+plt.grid(True)
+plt.xlabel(r'$\alpha$ [deg]')
+plt.ylabel(r'$C_{L}$ [-]')
+
+plt.savefig("CLchar.png")
+
+
 
 # --------------------------- Extra Computations --------------------------- #
 
